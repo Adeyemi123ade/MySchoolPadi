@@ -15,9 +15,9 @@ export function StudentSidePanel() {
         <Image
           src="/images/auth/student-illustration.webp"
           alt="A student carrying textbooks and a backpack"
-          width={458}
-          height={648}
-          className="h-auto max-h-80 w-auto"
+          width={186}
+          height={264}
+          className="h-auto max-h-72 w-auto"
           priority
         />
       </div>

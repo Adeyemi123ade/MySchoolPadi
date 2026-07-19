@@ -15,8 +15,8 @@ export function LecturerSidePanel() {
         <Image
           src="/images/auth/lecturer-illustration.webp"
           alt="A lecturer in a suit, arms crossed"
-          width={455}
-          height={648}
+          width={185}
+          height={264}
           className="h-auto max-h-56 w-auto"
           priority
         />
