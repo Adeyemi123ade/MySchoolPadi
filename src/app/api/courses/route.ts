@@ -4,11 +4,20 @@ import { requireRole, requireUser } from "@/lib/api/auth";
 import { apiErrorFromException, apiSuccess } from "@/lib/api/response";
 import { createCourseSchema } from "@/lib/validations/course";
 
-/** GET /api/courses?schoolId=&search= — list courses. Auth required, open to any role. */
+/**
+ * GET /api/courses?schoolId=&search= — list courses. Auth required, open to any role.
+ * Pass `mine=1` to list only the current lecturer's own courses instead.
+ */
 export async function GET(request: NextRequest) {
   try {
-    const { supabase } = await requireUser();
+    const { supabase, user } = await requireUser();
     const { searchParams } = new URL(request.url);
+
+    if (searchParams.get("mine") === "1") {
+      const { data, error } = await coursesService.listForLecturer(supabase, user.id);
+      if (error) throw error;
+      return apiSuccess(data);
+    }
 
     const { data, error } = await coursesService.list(supabase, {
       schoolId: searchParams.get("schoolId") ?? undefined,

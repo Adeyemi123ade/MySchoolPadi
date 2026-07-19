@@ -3,17 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { BOTTOM_NAV_ITEMS } from "@/constants/nav";
+import { getBottomNavItems } from "@/constants/nav";
+import { useAuth } from "@/hooks/use-auth";
 
 export function BottomNav() {
   const pathname = usePathname();
+  const { profile } = useAuth();
+  const items = getBottomNavItems(profile?.role);
 
   return (
     <nav
       aria-label="Bottom navigation"
       className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-border bg-background md:hidden"
     >
-      {BOTTOM_NAV_ITEMS.map((item) => {
+      {items.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
         const Icon = item.icon;
 

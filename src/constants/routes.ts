@@ -19,6 +19,12 @@ export const ROUTES = {
   bookmarks: "/bookmarks",
   profile: "/profile",
   settings: "/settings",
+
+  // Lecturer-only
+  students: "/students",
+  analytics: "/analytics",
+  calendar: "/calendar",
+  messages: "/messages",
 } as const;
 
 export const PROTECTED_ROUTE_PREFIXES = [
@@ -29,6 +35,10 @@ export const PROTECTED_ROUTE_PREFIXES = [
   ROUTES.bookmarks,
   ROUTES.settings,
   ROUTES.profile,
+  ROUTES.students,
+  ROUTES.analytics,
+  ROUTES.calendar,
+  ROUTES.messages,
 ] as const;
 
 // Note: /reset-password is intentionally excluded from both lists below.

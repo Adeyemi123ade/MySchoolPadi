@@ -2,9 +2,13 @@
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { NavLink } from "./nav-link";
-import { SIDEBAR_NAV_ITEMS } from "@/constants/nav";
+import { getSidebarNavItems } from "@/constants/nav";
+import { useAuth } from "@/hooks/use-auth";
 
 export function MobileNavSheet({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  const { profile } = useAuth();
+  const items = getSidebarNavItems(profile?.role);
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-72">
@@ -12,7 +16,7 @@ export function MobileNavSheet({ open, onOpenChange }: { open: boolean; onOpenCh
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <nav aria-label="Main navigation" className="flex flex-col gap-1">
-          {SIDEBAR_NAV_ITEMS.map((item) => (
+          {items.map((item) => (
             <NavLink key={item.href} item={item} />
           ))}
         </nav>

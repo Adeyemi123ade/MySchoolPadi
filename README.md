@@ -80,19 +80,19 @@ Where the Design System page and the separate Design-to-Code Specification disag
 
 ## Routing & auth
 
-Route groups mirror the Frontend Architecture routing diagram. `(dashboard)` — `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile` — is wrapped in `DashboardShell` (Header + Sidebar on desktop, Header + Sheet drawer + BottomNav on mobile, Footer). `/dashboard` (Student Dashboard) is a real, data-wired screen; the rest are still placeholders.
+Route groups mirror the Frontend Architecture routing diagram. `(dashboard)` — `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile`, plus lecturer-only `/students`, `/analytics`, `/calendar`, `/messages` — is wrapped in `DashboardShell` (Header + Sidebar on desktop, Header + Sheet drawer + BottomNav on mobile, Footer). `/dashboard` is a real, data-wired screen for both roles; the rest are still placeholders.
 
 The Header was originally built purple with no mockup to go on; once real screen mockups arrived showing a consistent light/white header across the app, it was restyled to match (see git history if you want the purple version back for some reason).
 
-### Student Dashboard
+**Navigation is role-aware** (`src/constants/nav.ts`: `getSidebarNavItems`/`getBottomNavItems`). Students see Dashboard/Courses/Announcements/Notifications/Bookmarks/Profile; lecturers see Dashboard/Courses/Announcements/Students/Analytics/Calendar/Messages/Settings, per their respective dashboard mockups — these are genuinely different information architectures, not a reskin of the same nav.
 
-Greeting, "Today's Overview" stat card, and a Recent Announcements list, built against the provided mockup. Wired to real data where the backend already supports it:
+### Dashboard (`/dashboard`)
 
-- Announcements count + Recent Announcements list — live via `GET /api/announcements`
-- Bookmark toggle on each announcement card — live via `POST`/`DELETE /api/bookmarks`
-- Notification bell badge in the header — live unread count via `GET /api/notifications`
+`DashboardPage` branches on `profile.role` and renders `StudentDashboardView` or `LecturerDashboardView` (`src/features/dashboard/components/`).
 
-"Lectures Today", "Assignments", and "Events" in the overview card are shown as `0` rather than fabricated numbers — the schema has no lecture-schedule, assignment, or event tables yet, so there's no real data to back them. The floating "+" action button shown on this screen in the mockup was left out; its purpose for a student account wasn't clear, and it wasn't worth guessing at.
+**Student view**: greeting, "Today's Overview" stat card, Recent Announcements list. Wired to real data where the backend supports it — announcements count + list (`GET /api/announcements`), bookmark toggle (`POST`/`DELETE /api/bookmarks`), notification bell badge (`GET /api/notifications`). "Lectures Today" / "Assignments" / "Events" show `0` — no schema for those yet. The mockup's floating "+" button was left out; unclear purpose for a student account.
+
+**Lecturer view**: greeting, 4 stat cards (Courses/Announcements/Total Students/Avg. Engagement), Announcement Summary, Engagement Overview, Upcoming Lectures, Recent Announcements. Wired to real data: Courses count (`GET /api/courses?mine=1`), Announcements count + Published/Draft breakdown + Recent list (`GET /api/announcements?mine=1`). **Total Students, Avg. Engagement, "Scheduled" announcement count, Total Views, the Engagement Overview chart, and Upcoming Lectures are not backed by real data** — no aggregate enrollment-count query, no view/engagement tracking, no lecture-schedule table exist yet. Rather than fabricate numbers or a fake chart, these render as `0`/`—`/honest empty states ("No engagement data yet", "No lecture schedule yet"). The mockup's "You have N classes today" banner was left out entirely for the same reason. Per the `dataviz` skill's own guidance ("sometimes the answer is not a chart"), Engagement Overview is an empty state, not a chart with invented data.
 
 Announcement badges (IMPORTANT / REMINDER / UPDATE / NEW / INFO) are derived, not stored: `important`/`reminder`/`update` map directly from `announcements.priority`; `normal`-priority announcements show NEW if published within the last 48 hours, otherwise INFO.
 
@@ -153,8 +153,10 @@ These were hand-authored to match shadcn/ui's standard "new-york" style output, 
 
 ## Not yet built
 
-- Dashboard-area screen content beyond `/dashboard` itself (Courses, Announcements, Notifications, Bookmarks, Settings, Profile) — layout chrome exists, page content is still placeholder
-- Lecture schedule, assignments, and events data models (needed for the overview card's other stats to be real)
+- Dashboard-area screen content beyond `/dashboard` itself (Courses, Announcements, Students, Analytics, Calendar, Messages, Notifications, Bookmarks, Settings, Profile) — layout chrome exists, page content is still placeholder
+- Lecture schedule, assignments, and events data models (needed for both dashboards' remaining stats to be real)
+- Announcement scheduling (a "publish later" state beyond draft/published) and view/engagement tracking (needed for the lecturer dashboard's Scheduled count, Total Views, and Engagement Overview)
+- An aggregate "total students across my courses" query (currently only per-course enrollment counts are queryable, via `enrollmentsService.listForCourse`)
 - Feature-level components beyond the base `components/ui/` primitives (e.g. an actual CourseCard, AnnouncementCard — see Design System's Cards section)
 - Payment provider integration (webhook route to transition `payments.status`)
 - Resend email templates
