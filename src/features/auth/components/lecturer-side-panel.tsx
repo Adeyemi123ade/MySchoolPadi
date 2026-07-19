@@ -11,13 +11,13 @@ const CAPABILITIES = [
 export function LecturerSidePanel() {
   return (
     <div className="flex h-full flex-col gap-6 p-8">
-      <div className="flex items-center justify-center rounded-lg bg-primary/5 p-4">
+      <div className="relative h-72 shrink-0 overflow-hidden rounded-lg bg-primary/5">
         <Image
           src="/images/auth/lecturer-illustration.webp"
           alt="A lecturer in a suit, arms crossed"
-          width={185}
-          height={264}
-          className="h-auto max-h-56 w-auto"
+          fill
+          sizes="(min-width: 768px) 320px, 90vw"
+          className="object-contain object-bottom"
           priority
         />
       </div>

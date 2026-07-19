@@ -11,13 +11,13 @@ const FEATURES = [
 export function StudentSidePanel() {
   return (
     <div className="flex h-full flex-col justify-between p-8">
-      <div className="flex flex-1 items-center justify-center rounded-lg bg-primary/5">
+      <div className="relative min-h-0 flex-1 overflow-hidden rounded-lg bg-primary/5">
         <Image
           src="/images/auth/student-illustration.webp"
           alt="A student carrying textbooks and a backpack"
-          width={186}
-          height={264}
-          className="h-auto max-h-72 w-auto"
+          fill
+          sizes="(min-width: 768px) 320px, 90vw"
+          className="object-contain object-bottom"
           priority
         />
       </div>
