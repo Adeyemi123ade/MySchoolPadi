@@ -1,0 +1,797 @@
+openapi: 3.0.3
+info:
+  title: MySchoolPadi API
+  version: "1.0.0"
+  description: |
+    Internal REST API for the MySchoolPadi Next.js app. Route handlers under
+    `src/app/api/**/route.ts` are thin wrappers over the typed service layer
+    in `src/services/`, which itself talks to Supabase (Postgres + Auth +
+    Storage). Row-level security in `supabase/migrations/` is the actual
+    authorization boundary — these routes add request validation (zod),
+    consistent error shapes, and role checks for clearer error messages.
+
+    All endpoints except `/auth/signup`, `/auth/login`, and
+    `/auth/forgot-password` require an authenticated session, carried via
+    the Supabase session cookie set by `/auth/login`. There is no bearer
+    token flow for browser clients.
+servers:
+  - url: /api
+    description: Relative to your deployment origin (e.g. http://localhost:3000/api)
+
+security:
+  - cookieAuth: []
+
+tags:
+  - name: Auth
+  - name: Courses
+  - name: Enrollments
+  - name: Announcements
+  - name: Notifications
+  - name: Bookmarks
+  - name: Payments
+  - name: Storage
+
+paths:
+  /auth/signup:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, fullName]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                fullName: { type: string, maxLength: 120 }
+                role: { type: string, enum: [student, lecturer] }
+      responses:
+        "201":
+          description: Account created. `session` is null until the email is verified.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Sign in with email + password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200":
+          description: Signed in. Sets the session cookie.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "401": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Sign out and clear the session
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      summary: Send a password-reset email
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /courses:
+    get:
+      tags: [Courses]
+      summary: List courses
+      parameters:
+        - name: schoolId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: search
+          in: query
+          description: Case-insensitive title search
+          schema: { type: string }
+      responses:
+        "200":
+          description: Courses, each with the lecturer's public profile fields embedded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/CourseWithLecturer" }
+        "401": { $ref: "#/components/responses/Error" }
+    post:
+      tags: [Courses]
+      summary: Create a course
+      description: Requires role `lecturer` or `admin`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, title, schoolId]
+              properties:
+                code: { type: string, maxLength: 20 }
+                title: { type: string, maxLength: 200 }
+                description: { type: string, maxLength: 2000 }
+                schoolId: { type: string, format: uuid }
+      responses:
+        "201":
+          description: Course created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Course" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /courses/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Courses]
+      summary: Get a course by id
+      responses:
+        "200":
+          description: The course.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/CourseWithLecturer" }
+        "404": { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Courses]
+      summary: Update a course
+      description: RLS restricts this to the owning lecturer or an admin.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code: { type: string, maxLength: 20 }
+                title: { type: string, maxLength: 200 }
+                description: { type: string, maxLength: 2000 }
+                schoolId: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Updated course.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Course" }
+        "403": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Courses]
+      summary: Delete a course
+      description: RLS restricts this to the owning lecturer or an admin. Cascades to enrollments and announcements.
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+        "403": { $ref: "#/components/responses/Error" }
+
+  /enrollments:
+    get:
+      tags: [Enrollments]
+      summary: List the current user's own enrollments
+      responses:
+        "200":
+          description: Enrollments, each with the full course row embedded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/EnrollmentWithCourse" }
+    post:
+      tags: [Enrollments]
+      summary: Enroll the current user in a course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [courseId]
+              properties:
+                courseId: { type: string, format: uuid }
+      responses:
+        "201":
+          description: Enrollment created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Enrollment" }
+        "400":
+          description: Already enrolled (unique constraint), or invalid course.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  /enrollments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Enrollments]
+      summary: Drop an enrollment
+      description: RLS restricts this to the enrolled student or an admin.
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+        "403": { $ref: "#/components/responses/Error" }
+
+  /announcements:
+    get:
+      tags: [Announcements]
+      summary: List announcements
+      parameters:
+        - name: courseId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: schoolId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: mine
+          in: query
+          description: Pass `1` to list the current lecturer's own announcements (drafts included) instead of published ones.
+          schema: { type: string, enum: ["1"] }
+      responses:
+        "200":
+          description: Announcements, each with the author's public profile fields embedded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/AnnouncementWithAuthor" }
+    post:
+      tags: [Announcements]
+      summary: Create a draft announcement
+      description: Requires role `lecturer` or `admin`. Either `courseId` or `schoolId` is required.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, body]
+              properties:
+                title: { type: string, maxLength: 200 }
+                body: { type: string, maxLength: 10000 }
+                courseId: { type: string, format: uuid }
+                schoolId: { type: string, format: uuid }
+                priority:
+                  type: string
+                  enum: [normal, important, reminder, update]
+      responses:
+        "201":
+          description: Announcement created as a draft.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Announcement" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /announcements/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Announcements]
+      summary: Get an announcement by id
+      description: RLS hides drafts from anyone but the author or an admin.
+      responses:
+        "200":
+          description: The announcement.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/AnnouncementWithAuthor" }
+        "404": { $ref: "#/components/responses/Error" }
+    patch:
+      tags: [Announcements]
+      summary: Update an announcement's title/body/priority
+      description: RLS restricts this to the author or an admin. Does not change `status` — see the /publish action.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string, maxLength: 200 }
+                body: { type: string, maxLength: 10000 }
+                priority:
+                  type: string
+                  enum: [normal, important, reminder, update]
+      responses:
+        "200":
+          description: Updated announcement.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Announcement" }
+        "403": { $ref: "#/components/responses/Error" }
+    delete:
+      tags: [Announcements]
+      summary: Delete an announcement
+      description: RLS restricts this to the author or an admin.
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+        "403": { $ref: "#/components/responses/Error" }
+
+  /announcements/{id}/publish:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Announcements]
+      summary: Publish a draft announcement
+      description: Transitions `status` from `draft` to `published` and stamps `published_at`. RLS restricts this to the author or an admin.
+      responses:
+        "200":
+          description: Published announcement.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Announcement" }
+        "403": { $ref: "#/components/responses/Error" }
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: List the current user's own notifications
+      responses:
+        "200":
+          description: Notifications, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Notification" }
+
+  /notifications/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Notifications]
+      summary: Mark a notification as read
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+    delete:
+      tags: [Notifications]
+      summary: Delete a notification
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+
+  /notifications/mark-all-read:
+    post:
+      tags: [Notifications]
+      summary: Mark every unread notification for the current user as read
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+
+  /bookmarks:
+    get:
+      tags: [Bookmarks]
+      summary: List the current user's bookmarks
+      parameters:
+        - name: type
+          in: query
+          schema: { type: string, enum: [course, announcement] }
+      responses:
+        "200":
+          description: Bookmarks, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Bookmark" }
+    post:
+      tags: [Bookmarks]
+      summary: Bookmark a course or announcement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookmarkInput" }
+      responses:
+        "201":
+          description: Bookmark created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Bookmark" }
+        "400":
+          description: Already bookmarked (unique constraint).
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    delete:
+      tags: [Bookmarks]
+      summary: Remove a bookmark
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/BookmarkInput" }
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+
+  /payments:
+    get:
+      tags: [Payments]
+      summary: List the current user's own payment history
+      responses:
+        "200":
+          description: Payments, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Payment" }
+    post:
+      tags: [Payments]
+      summary: Record a new payment attempt
+      description: |
+        Creates a payment with `status: pending`. This does not itself charge
+        anything — the pending -> success/failed/refunded transition happens
+        out-of-band via a trusted payment-provider webhook (not yet built).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                courseId: { type: string, format: uuid }
+                amount: { type: number, exclusiveMinimum: 0 }
+                currency: { type: string, minLength: 3, maxLength: 3, default: NGN }
+                provider: { type: string }
+                providerReference: { type: string }
+      responses:
+        "201":
+          description: Payment recorded as pending.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Payment" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /storage/files:
+    get:
+      tags: [Storage]
+      summary: List file metadata for a course
+      description: Actual downloads require a signed URL, obtained separately (not yet exposed as a route — see storageService.getSignedUrl).
+      parameters:
+        - name: courseId
+          in: query
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: File records, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/StoredFile" }
+    post:
+      tags: [Storage]
+      summary: Upload a course material
+      description: Requires role `lecturer` or `admin` (mirrors the storage.objects RLS policy).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, courseId]
+              properties:
+                file: { type: string, format: binary }
+                courseId: { type: string, format: uuid }
+      responses:
+        "201":
+          description: File uploaded and recorded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/StoredFile" }
+        "403": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /storage/avatar:
+    post:
+      tags: [Storage]
+      summary: Upload or replace the current user's avatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        "200":
+          description: Avatar uploaded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      path: { type: string }
+                      url: { type: string, format: uri }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: Set automatically by /auth/login via @supabase/ssr. Browser clients don't need to handle this manually.
+
+  responses:
+    Success:
+      description: Operation succeeded.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              data:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+    Error:
+      description: Request failed.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+    ValidationError:
+      description: Request body failed validation.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  schemas:
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message: { type: string }
+            details: { type: object, nullable: true }
+
+    AuthResult:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            user: { type: object, nullable: true }
+            session: { type: object, nullable: true }
+
+    Profile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        full_name: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+        role: { type: string, enum: [student, lecturer, admin] }
+        school_id: { type: string, format: uuid, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    Course:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        school_id: { type: string, format: uuid }
+        lecturer_id: { type: string, format: uuid, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    CourseWithLecturer:
+      allOf:
+        - $ref: "#/components/schemas/Course"
+        - type: object
+          properties:
+            lecturer:
+              type: object
+              nullable: true
+              properties:
+                id: { type: string, format: uuid }
+                full_name: { type: string, nullable: true }
+                avatar_url: { type: string, nullable: true }
+
+    Enrollment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        course_id: { type: string, format: uuid }
+        status: { type: string, enum: [active, completed, dropped] }
+        enrolled_at: { type: string, format: date-time }
+
+    EnrollmentWithCourse:
+      allOf:
+        - $ref: "#/components/schemas/Enrollment"
+        - type: object
+          properties:
+            course: { $ref: "#/components/schemas/Course" }
+
+    Announcement:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        course_id: { type: string, format: uuid, nullable: true }
+        school_id: { type: string, format: uuid, nullable: true }
+        author_id: { type: string, format: uuid }
+        title: { type: string }
+        body: { type: string }
+        priority: { type: string, enum: [normal, important, reminder, update] }
+        status: { type: string, enum: [draft, published] }
+        published_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    AnnouncementWithAuthor:
+      allOf:
+        - $ref: "#/components/schemas/Announcement"
+        - type: object
+          properties:
+            author:
+              type: object
+              properties:
+                id: { type: string, format: uuid }
+                full_name: { type: string, nullable: true }
+                avatar_url: { type: string, nullable: true }
+
+    Notification:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        type: { type: string, enum: [announcement, enrollment, payment, system] }
+        title: { type: string }
+        body: { type: string, nullable: true }
+        link: { type: string, nullable: true }
+        is_read: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+    BookmarkInput:
+      type: object
+      required: [type, id]
+      properties:
+        type: { type: string, enum: [course, announcement] }
+        id: { type: string, format: uuid }
+
+    Bookmark:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        bookmarkable_type: { type: string, enum: [course, announcement] }
+        bookmarkable_id: { type: string, format: uuid }
+        created_at: { type: string, format: date-time }
+
+    Payment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        course_id: { type: string, format: uuid, nullable: true }
+        amount: { type: number }
+        currency: { type: string }
+        status: { type: string, enum: [pending, success, failed, refunded] }
+        provider: { type: string, nullable: true }
+        provider_reference: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    StoredFile:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        owner_id: { type: string, format: uuid }
+        course_id: { type: string, format: uuid, nullable: true }
+        bucket: { type: string }
+        path: { type: string }
+        mime_type: { type: string, nullable: true }
+        size_bytes: { type: integer, nullable: true }
+        created_at: { type: string, format: date-time }

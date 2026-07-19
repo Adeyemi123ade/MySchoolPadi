@@ -2,7 +2,7 @@
 
 A school communication and course platform for students and lecturers — announcements, courses, enrollments, notifications and bookmarks, built mobile-first and accessible.
 
-This repository currently contains the **product foundation**: project scaffold, design tokens, data model, auth, and typed service layer. No screens have been designed/built yet — that's the next phase, against the Design System and User Flow Map.
+This repository currently contains the **product foundation**: project scaffold, design tokens, data model, auth, a REST API, and a typed service layer. No screens have been designed/built yet — that's the next phase, against the Design System and User Flow Map.
 
 ## Stack
 
@@ -47,15 +47,19 @@ src/
   features/            Feature-scoped modules (not yet built)
   hooks/               Custom hooks (e.g. useAuth)
   lib/
+    api/                 Route handler helpers: auth guard, error/response envelopes
+    validations/          Zod schemas for API request bodies
     supabase/            Browser / server / middleware Supabase clients
     utils.ts              cn() helper (shadcn convention)
-  services/            Typed Supabase query wrappers, one per domain
+  services/            Typed Supabase query wrappers, one per domain (JSDoc'd)
   store/               Zustand stores (auth, ui)
   types/               Domain types + generated database types
   constants/           Route table, shared constants
 supabase/
   config.toml          Local Supabase CLI config
   migrations/          SQL schema + RLS policies
+docs/
+  openapi.yaml         OpenAPI 3.0 spec for src/app/api/**
 ```
 
 ## Data model
@@ -78,11 +82,47 @@ Route groups mirror the Frontend Architecture routing diagram: `(auth)` for `/lo
 
 `src/middleware.ts` refreshes the Supabase session on every request and redirects unauthenticated users away from protected routes to `/login`, and authenticated users away from auth routes to `/dashboard`.
 
+## API
+
+`src/app/api/**/route.ts` exposes a REST API over the data model — the internal API surface a future mobile app or third-party integration would use, and the shape sketched in the Technical Architecture Document's API Design table. Each route handler is a thin wrapper: validate the request with zod, resolve the caller via `requireUser()`/`requireRole()`, call the matching `services/*.service.ts` function, translate the result into a `{ data }` / `{ error }` JSON envelope. **Row-level security in `supabase/migrations/` is the real authorization boundary** — the route-level role checks exist for clearer error messages, not as the only guard.
+
+| Domain | Endpoints |
+| --- | --- |
+| Auth | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `POST /api/auth/forgot-password` |
+| Courses | `GET/POST /api/courses`, `GET/PATCH/DELETE /api/courses/:id` |
+| Enrollments | `GET/POST /api/enrollments`, `DELETE /api/enrollments/:id` |
+| Announcements | `GET/POST /api/announcements`, `GET/PATCH/DELETE /api/announcements/:id`, `POST /api/announcements/:id/publish` |
+| Notifications | `GET /api/notifications`, `PATCH/DELETE /api/notifications/:id`, `POST /api/notifications/mark-all-read` |
+| Bookmarks | `GET/POST/DELETE /api/bookmarks` |
+| Payments | `GET/POST /api/payments` |
+| Storage | `GET/POST /api/storage/files`, `POST /api/storage/avatar` |
+
+### Documentation
+
+Two layers, documented two different ways:
+
+- **`src/services/*.service.ts`** (the typed Supabase query layer) — documented with **JSDoc** on every exported function: params, return shape, and which RLS policy governs it. Shows up as hover/autocomplete docs in your editor; read the files directly to learn the data layer.
+- **`src/app/api/**`** (the REST surface) — documented with an **OpenAPI 3.0 spec** at [`docs/openapi.yaml`](./docs/openapi.yaml): every path, request/response schema, and error shape. To browse it interactively:
+
+  ```bash
+  # Option A: Redoc, static HTML preview
+  pnpm dlx @redocly/cli preview-docs docs/openapi.yaml
+
+  # Option B: Swagger UI
+  pnpm dlx swagger-ui-watcher docs/openapi.yaml
+  ```
+
+  Or import `docs/openapi.yaml` directly into Postman/Insomnia, or open it with the "OpenAPI (Swagger) Editor" VS Code extension.
+
+  There's intentionally no in-app `/api-docs` page yet — that would be a screen, and this pass is foundation-only.
+
 ## Not yet built
 
 - Actual screen UI (per the Design System and User Flow Map)
 - shadcn/ui components beyond the base `cn()` helper
 - Header / Sidebar / Footer components
-- Payment provider integration (Edge Function to transition `payments.status`)
+- Payment provider integration (webhook route to transition `payments.status`)
 - Resend email templates
 - Supabase Edge Functions
+- Signed-URL download route for private course materials (service method exists: `storageService.getSignedUrl`)
+- Rate limiting on the API routes (Security Standards: "validate inputs" is covered via zod; throttling is not yet in place)
