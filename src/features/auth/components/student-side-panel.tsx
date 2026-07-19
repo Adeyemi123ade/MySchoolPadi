@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BookOpen, Download, GraduationCap, Wifi } from "lucide-react";
 
 const FEATURES = [
@@ -11,7 +12,14 @@ export function StudentSidePanel() {
   return (
     <div className="flex h-full flex-col justify-between p-8">
       <div className="flex flex-1 items-center justify-center rounded-lg bg-primary/5">
-        <GraduationCap className="size-32 text-primary" strokeWidth={1} />
+        <Image
+          src="/images/auth/student-illustration.webp"
+          alt="A student carrying textbooks and a backpack"
+          width={458}
+          height={648}
+          className="h-auto max-h-80 w-auto"
+          priority
+        />
       </div>
 
       <ul className="mt-6 grid grid-cols-2 gap-3">

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BarChart3, Check, Megaphone, Presentation, ShieldAlert, Users } from "lucide-react";
 
 const CAPABILITIES = [
@@ -10,6 +11,17 @@ const CAPABILITIES = [
 export function LecturerSidePanel() {
   return (
     <div className="flex h-full flex-col gap-6 p-8">
+      <div className="flex items-center justify-center rounded-lg bg-primary/5 p-4">
+        <Image
+          src="/images/auth/lecturer-illustration.webp"
+          alt="A lecturer in a suit, arms crossed"
+          width={455}
+          height={648}
+          className="h-auto max-h-56 w-auto"
+          priority
+        />
+      </div>
+
       <div className="rounded-md border border-border p-5">
         <h3 className="text-body font-semibold text-foreground">As a lecturer, you can:</h3>
         <ul className="mt-3 flex flex-col gap-2">
