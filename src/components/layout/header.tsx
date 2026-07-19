@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
+import { useUnreadNotificationCount } from "@/features/notifications/hooks/use-notifications";
 import { createClient } from "@/lib/supabase/client";
 import { authService } from "@/services";
 import { ROUTES } from "@/constants/routes";
@@ -30,6 +31,7 @@ function initials(name?: string | null) {
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { profile } = useAuth();
+  const unreadCount = useUnreadNotificationCount();
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -38,36 +40,35 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   }
 
   return (
-    <header className="flex h-16 items-center gap-3 border-b border-border bg-primary px-4 text-primary-foreground">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="text-primary-foreground hover:bg-white/10 md:hidden"
-        onClick={onMenuClick}
-        aria-label="Open menu"
-      >
+    <header className="flex h-16 items-center gap-3 border-b border-border bg-background px-4">
+      <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick} aria-label="Open menu">
         <Menu className="size-5" />
       </Button>
 
-      <Link href={ROUTES.dashboard} className="text-primary-foreground [&_span]:text-primary-foreground">
+      <Link href={ROUTES.dashboard}>
         <Logo />
       </Link>
 
       <div className="flex-1" />
 
-      <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-white/10" aria-label="Search">
+      <Button variant="ghost" size="icon" aria-label="Search">
         <Search className="size-5" />
       </Button>
 
-      <Button variant="ghost" size="icon" className="relative text-primary-foreground hover:bg-white/10" aria-label="Notifications" asChild>
+      <Button variant="ghost" size="icon" className="relative" aria-label="Notifications" asChild>
         <Link href={ROUTES.notifications}>
           <Bell className="size-5" />
+          {unreadCount > 0 && (
+            <span className="absolute top-1.5 right-1.5 flex size-4 items-center justify-center rounded-pill bg-destructive text-[10px] font-semibold text-destructive-foreground">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </Link>
       </Button>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <button className="ml-1 rounded-pill outline-none focus-visible:ring-2 focus-visible:ring-white/50" aria-label="Account menu">
+          <button className="ml-1 rounded-pill outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Account menu">
             <Avatar>
               <AvatarImage src={profile?.avatar_url ?? undefined} alt={profile?.full_name ?? "User"} />
               <AvatarFallback>{initials(profile?.full_name)}</AvatarFallback>

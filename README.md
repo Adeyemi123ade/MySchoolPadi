@@ -2,7 +2,7 @@
 
 A school communication and course platform for students and lecturers — announcements, courses, enrollments, notifications and bookmarks, built mobile-first and accessible.
 
-This repository contains the product foundation (scaffold, design tokens, data model, auth, REST API, typed service layer, layout chrome) plus the full authentication screen set (login, student/lecturer registration, email verification, password recovery) built against the Login/Registration/Verification/Password Recovery mockup. Dashboard-area screens (courses, announcements, etc.) are still placeholders.
+This repository contains the product foundation (scaffold, design tokens, data model, auth, REST API, typed service layer, layout chrome), the full authentication screen set (login, student/lecturer registration, email verification, password recovery), and the Student Dashboard — all built against their respective mockups. The remaining dashboard-area screens (Courses, Announcements, Notifications, Bookmarks, Profile, Settings) are still placeholders.
 
 ## Stack
 
@@ -44,10 +44,10 @@ src/
     layout/             Header, Sidebar, BottomNav, Footer, DashboardShell
     shared/              Cross-feature reusable components (not yet built)
     providers/            React Query provider, Toaster, app-wide providers
-  features/            Feature-scoped modules (not yet built)
+  features/            Feature-scoped modules (auth, dashboard, announcements, notifications, bookmarks)
   hooks/               Custom hooks (e.g. useAuth)
   lib/
-    api/                 Route handler helpers: auth guard, error/response envelopes
+    api/                 Route handler helpers: auth guard, error/response envelopes, client-side fetchJson()
     validations/          Zod schemas for API request bodies
     supabase/            Browser / server / middleware Supabase clients
     utils.ts              cn() helper (shadcn convention)
@@ -80,7 +80,21 @@ Where the Design System page and the separate Design-to-Code Specification disag
 
 ## Routing & auth
 
-Route groups mirror the Frontend Architecture routing diagram. `(dashboard)` — `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile` — is wrapped in `DashboardShell` (Header + Sidebar on desktop, Header + Sheet drawer + BottomNav on mobile, Footer); the chrome is real, each page's own content is still a placeholder.
+Route groups mirror the Frontend Architecture routing diagram. `(dashboard)` — `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile` — is wrapped in `DashboardShell` (Header + Sidebar on desktop, Header + Sheet drawer + BottomNav on mobile, Footer). `/dashboard` (Student Dashboard) is a real, data-wired screen; the rest are still placeholders.
+
+The Header was originally built purple with no mockup to go on; once real screen mockups arrived showing a consistent light/white header across the app, it was restyled to match (see git history if you want the purple version back for some reason).
+
+### Student Dashboard
+
+Greeting, "Today's Overview" stat card, and a Recent Announcements list, built against the provided mockup. Wired to real data where the backend already supports it:
+
+- Announcements count + Recent Announcements list — live via `GET /api/announcements`
+- Bookmark toggle on each announcement card — live via `POST`/`DELETE /api/bookmarks`
+- Notification bell badge in the header — live unread count via `GET /api/notifications`
+
+"Lectures Today", "Assignments", and "Events" in the overview card are shown as `0` rather than fabricated numbers — the schema has no lecture-schedule, assignment, or event tables yet, so there's no real data to back them. The floating "+" action button shown on this screen in the mockup was left out; its purpose for a student account wasn't clear, and it wasn't worth guessing at.
+
+Announcement badges (IMPORTANT / REMINDER / UPDATE / NEW / INFO) are derived, not stored: `important`/`reminder`/`update` map directly from `announcements.priority`; `normal`-priority announcements show NEW if published within the last 48 hours, otherwise INFO.
 
 `(auth)` is fully built out:
 
@@ -139,7 +153,8 @@ These were hand-authored to match shadcn/ui's standard "new-york" style output, 
 
 ## Not yet built
 
-- Dashboard-area screen content (Courses, Announcements, Notifications, Bookmarks, Settings, Profile) — layout chrome exists, page content is still placeholder
+- Dashboard-area screen content beyond `/dashboard` itself (Courses, Announcements, Notifications, Bookmarks, Settings, Profile) — layout chrome exists, page content is still placeholder
+- Lecture schedule, assignments, and events data models (needed for the overview card's other stats to be real)
 - Feature-level components beyond the base `components/ui/` primitives (e.g. an actual CourseCard, AnnouncementCard — see Design System's Cards section)
 - Payment provider integration (webhook route to transition `payments.status`)
 - Resend email templates
