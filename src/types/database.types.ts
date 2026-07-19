@@ -25,6 +25,11 @@ export interface Database {
           avatar_url: string | null;
           role: UserRole;
           school_id: string | null;
+          phone_number: string | null;
+          matric_number: string | null;
+          department: string | null;
+          staff_id: string | null;
+          verified: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -35,6 +40,11 @@ export interface Database {
           avatar_url?: string | null;
           role?: UserRole;
           school_id?: string | null;
+          phone_number?: string | null;
+          matric_number?: string | null;
+          department?: string | null;
+          staff_id?: string | null;
+          verified?: boolean;
           created_at?: string;
           updated_at?: string;
         };

@@ -2,7 +2,7 @@
 
 A school communication and course platform for students and lecturers — announcements, courses, enrollments, notifications and bookmarks, built mobile-first and accessible.
 
-This repository currently contains the **product foundation**: project scaffold, design tokens, data model, auth, a REST API, and a typed service layer. No screens have been designed/built yet — that's the next phase, against the Design System and User Flow Map.
+This repository contains the product foundation (scaffold, design tokens, data model, auth, REST API, typed service layer, layout chrome) plus the full authentication screen set (login, student/lecturer registration, email verification, password recovery) built against the Login/Registration/Verification/Password Recovery mockup. Dashboard-area screens (courses, announcements, etc.) are still placeholders.
 
 ## Stack
 
@@ -70,6 +70,8 @@ Tables: `profiles`, `schools`, `courses`, `enrollments`, `announcements`, `notif
 
 Every table has row-level security enabled, scoped by role (`student` / `lecturer` / `admin`) and ownership. A `handle_new_user` trigger provisions a `profiles` row automatically on signup, defaulting to the `student` role unless `role` is passed in signup metadata.
 
+`profiles` also carries registration-collected fields not in the original architecture doc's ERD: `phone_number`, `matric_number` (student), `department` + `staff_id` (lecturer), and `verified` (lecturer accounts require manual institution verification — students are auto-verified). `schools` is additionally readable by signed-out visitors (`anon` role), since the registration flow's school picker runs before the user has a session.
+
 ## Design tokens
 
 `src/app/globals.css` implements the MySchoolPadi Design System v1.0 (Locked) as Tailwind v4 `@theme` tokens: brand colors, the Inter typography scale, 8pt spacing (Tailwind's default spacing scale already matches it — no override needed), and named radii (`sm`/`md`/`lg`/`pill`).
@@ -78,9 +80,23 @@ Where the Design System page and the separate Design-to-Code Specification disag
 
 ## Routing & auth
 
-Route groups mirror the Frontend Architecture routing diagram: `(auth)` for `/login`, `/register`, `/forgot-password` (full-screen layout), and `(dashboard)` for `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile` — wrapped in `DashboardShell` (Header + Sidebar on desktop, Header + Sheet drawer + BottomNav on mobile, Footer). The chrome is real; each page's own content is still a placeholder.
+Route groups mirror the Frontend Architecture routing diagram. `(dashboard)` — `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile` — is wrapped in `DashboardShell` (Header + Sidebar on desktop, Header + Sheet drawer + BottomNav on mobile, Footer); the chrome is real, each page's own content is still a placeholder.
 
-`src/middleware.ts` refreshes the Supabase session on every request and redirects unauthenticated users away from protected routes to `/login`, and authenticated users away from auth routes to `/dashboard`.
+`(auth)` is fully built out:
+
+| Route | Screen |
+| --- | --- |
+| `/login` | Sign in, incl. "Continue with Google" |
+| `/register` | Role picker (Student / Lecturer) |
+| `/register/student` | 3-step wizard: Personal Info → Academic Info → Account Security |
+| `/register/lecturer` | 3-step wizard: Personal Info → Institution Info → Account Security |
+| `/verify-email` | 6-digit email OTP, with resend + expiry countdown |
+| `/forgot-password` | Request reset link → Check your email (client-side step transition) |
+| `/reset-password` | Create new password → success state. Reached via the emailed reset link, not by navigating directly |
+
+Only Step 1 of each registration wizard was shown in the source mockup; Steps 2 (school picker, via `/api/schools`) and 3 (password creation, matching the Reset Password screen's requirements checklist) were designed to fit the existing schema rather than invented fields with nowhere to persist.
+
+`src/middleware.ts` refreshes the Supabase session on every request and redirects unauthenticated users away from protected routes to `/login`, and authenticated users away from auth routes to `/dashboard`. `/reset-password` is deliberately excluded from both checks — see the comment in `src/constants/routes.ts` for why.
 
 ## API
 
@@ -88,7 +104,8 @@ Route groups mirror the Frontend Architecture routing diagram: `(auth)` for `/lo
 
 | Domain | Endpoints |
 | --- | --- |
-| Auth | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `POST /api/auth/forgot-password` |
+| Auth | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `POST /api/auth/forgot-password`, `POST /api/auth/verify-email`, `POST /api/auth/resend-verification`, `POST /api/auth/reset-password` |
+| Schools | `GET /api/schools` (public) |
 | Courses | `GET/POST /api/courses`, `GET/PATCH/DELETE /api/courses/:id` |
 | Enrollments | `GET/POST /api/enrollments`, `DELETE /api/enrollments/:id` |
 | Announcements | `GET/POST /api/announcements`, `GET/PATCH/DELETE /api/announcements/:id`, `POST /api/announcements/:id/publish` |
@@ -122,10 +139,17 @@ These were hand-authored to match shadcn/ui's standard "new-york" style output, 
 
 ## Not yet built
 
-- Actual screen UI (per the Design System and User Flow Map) — layout chrome (Header/Sidebar/BottomNav/Footer) exists, but page content is still placeholder
+- Dashboard-area screen content (Courses, Announcements, Notifications, Bookmarks, Settings, Profile) — layout chrome exists, page content is still placeholder
 - Feature-level components beyond the base `components/ui/` primitives (e.g. an actual CourseCard, AnnouncementCard — see Design System's Cards section)
 - Payment provider integration (webhook route to transition `payments.status`)
 - Resend email templates
 - Supabase Edge Functions
 - Signed-URL download route for private course materials (service method exists: `storageService.getSignedUrl`)
 - Rate limiting on the API routes (Security Standards: "validate inputs" is covered via zod; throttling is not yet in place)
+- Lecturer institution verification workflow (the `profiles.verified` flag exists and defaults `false` for lecturers; nothing sets it `true` yet — presumably an admin action)
+
+### Requires your setup to actually work
+
+- **Google sign-in**: the button/redirect on `/login` is wired up, but does nothing until you enable the Google provider under Authentication → Providers in your Supabase dashboard
+- **Email OTP verification**: `/verify-email` expects Supabase Auth's default 6-digit signup code email. If your project's email template was customized to a magic-link instead, the OTP input won't have anything to match against
+- **Password reset redirect**: `/api/auth/forgot-password` sends `${NEXT_PUBLIC_APP_URL}/reset-password` as the redirect — make sure that URL is in your Supabase Auth allow list (see the auth setup step in Getting Started)

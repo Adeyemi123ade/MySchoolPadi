@@ -8,6 +8,14 @@ export interface SignUpInput {
   password: string;
   fullName: string;
   role?: UserRole;
+  phoneNumber?: string;
+  schoolId?: string;
+  /** Student-only — matriculation/registration number. */
+  matricNumber?: string;
+  /** Lecturer-only. */
+  department?: string;
+  /** Lecturer-only — staff/employee number. */
+  staffId?: string;
 }
 
 export interface SignInInput {
@@ -24,9 +32,9 @@ export interface SignInInput {
 export const authService = {
   /**
    * Creates an auth user and, via the `handle_new_user` DB trigger, a
-   * matching `profiles` row. Sends a verification email; the user is not
-   * fully active until they verify (see requireEmailConfirmation in
-   * Supabase Auth settings).
+   * matching `profiles` row (including the role-specific fields below).
+   * Sends a 6-digit email OTP; the user is not fully active until
+   * verifyEmailOtp() succeeds.
    * @returns `{ data: { user, session }, error }`. `session` is null until email is verified.
    */
   async signUp(client: Client, input: SignUpInput) {
@@ -34,7 +42,15 @@ export const authService = {
       email: input.email,
       password: input.password,
       options: {
-        data: { full_name: input.fullName, role: input.role ?? "student" },
+        data: {
+          full_name: input.fullName,
+          role: input.role ?? "student",
+          phone_number: input.phoneNumber,
+          school_id: input.schoolId,
+          matric_number: input.matricNumber,
+          department: input.department,
+          staff_id: input.staffId,
+        },
       },
     });
   },
@@ -42,6 +58,11 @@ export const authService = {
   /** Signs in with email + password. @returns `{ data: { user, session }, error }`. */
   async signIn(client: Client, input: SignInInput) {
     return client.auth.signInWithPassword(input);
+  },
+
+  /** Starts the Google OAuth sign-in redirect. Requires the Google provider to be enabled in Supabase Auth settings. */
+  async signInWithGoogle(client: Client, redirectTo: string) {
+    return client.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
   },
 
   /** Clears the current session and its cookies. */
@@ -59,7 +80,12 @@ export const authService = {
     return client.auth.getUser();
   },
 
-  /** Re-sends the signup verification email/link. */
+  /** Verifies the 6-digit code sent to `email` on signup, completing account activation. Returns a session on success. */
+  async verifyEmailOtp(client: Client, email: string, token: string) {
+    return client.auth.verifyOtp({ email, token, type: "signup" });
+  },
+
+  /** Re-sends the signup verification code. */
   async resendVerification(client: Client, email: string) {
     return client.auth.resend({ type: "signup", email });
   },

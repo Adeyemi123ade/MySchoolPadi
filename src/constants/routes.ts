@@ -4,7 +4,11 @@ export const ROUTES = {
   contact: "/contact",
   login: "/login",
   register: "/register",
+  registerStudent: "/register/student",
+  registerLecturer: "/register/lecturer",
+  verifyEmail: "/verify-email",
   forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
 
   dashboard: "/dashboard",
   courses: "/courses",
@@ -27,4 +31,15 @@ export const PROTECTED_ROUTE_PREFIXES = [
   ROUTES.profile,
 ] as const;
 
-export const AUTH_ROUTE_PREFIXES = [ROUTES.login, ROUTES.register, ROUTES.forgotPassword] as const;
+// Note: /reset-password is intentionally excluded from both lists below.
+// A user lands there with a Supabase-issued recovery session (established
+// client-side from the emailed link's URL fragment, which the server can't
+// see on the very first request) and must be able to stay on the page while
+// authenticated to submit their new password — unlike other auth routes,
+// middleware must not redirect them away from it in either direction.
+export const AUTH_ROUTE_PREFIXES = [
+  ROUTES.login,
+  ROUTES.register,
+  ROUTES.verifyEmail,
+  ROUTES.forgotPassword,
+] as const;

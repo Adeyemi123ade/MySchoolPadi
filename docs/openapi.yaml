@@ -10,9 +10,13 @@ info:
     authorization boundary — these routes add request validation (zod),
     consistent error shapes, and role checks for clearer error messages.
 
-    All endpoints except `/auth/signup`, `/auth/login`, and
-    `/auth/forgot-password` require an authenticated session, carried via
-    the Supabase session cookie set by `/auth/login`. There is no bearer
+    All endpoints except `/auth/signup`, `/auth/login`,
+    `/auth/forgot-password`, `/auth/verify-email`,
+    `/auth/resend-verification`, and `/schools` require an authenticated
+    session, carried via the Supabase session cookie set by `/auth/login`.
+    `/auth/reset-password` is a special case: it requires the temporary
+    recovery session Supabase establishes when the user clicks their
+    password-reset email link, not a normal login. There is no bearer
     token flow for browser clients.
 servers:
   - url: /api
@@ -23,6 +27,7 @@ security:
 
 tags:
   - name: Auth
+  - name: Schools
   - name: Courses
   - name: Enrollments
   - name: Announcements
@@ -35,7 +40,12 @@ paths:
   /auth/signup:
     post:
       tags: [Auth]
-      summary: Register a new user
+      summary: Register a new student or lecturer
+      description: |
+        `matricNumber` is required when `role` is `student`; `department`
+        and `staffId` are required when `role` is `lecturer`. `schoolId` is
+        optional in all cases (see the Schools tag for how to source it).
+        Sends a 6-digit email verification code — see `/auth/verify-email`.
       security: []
       requestBody:
         required: true
@@ -43,12 +53,17 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email, password, fullName]
+              required: [email, password, fullName, role, phoneNumber]
               properties:
                 email: { type: string, format: email }
-                password: { type: string, minLength: 8 }
+                password: { type: string, description: "8+ chars, 1 uppercase, 1 number, 1 special character" }
                 fullName: { type: string, maxLength: 120 }
                 role: { type: string, enum: [student, lecturer] }
+                phoneNumber: { type: string }
+                schoolId: { type: string, format: uuid }
+                matricNumber: { type: string, description: "Required when role = student" }
+                department: { type: string, description: "Required when role = lecturer" }
+                staffId: { type: string, description: "Required when role = lecturer" }
       responses:
         "201":
           description: Account created. `session` is null until the email is verified.
@@ -108,6 +123,91 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Success" }
         "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/verify-email:
+    post:
+      tags: [Auth]
+      summary: Verify the 6-digit signup code
+      description: Activates the account and sets the session cookie on success.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, token]
+              properties:
+                email: { type: string, format: email }
+                token: { type: string, minLength: 6, maxLength: 6 }
+      responses:
+        "200":
+          description: Verified and signed in.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResult"
+        "400": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/resend-verification:
+    post:
+      tags: [Auth]
+      summary: Re-send the 6-digit signup verification code
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Set a new password
+      description: Must be called with the temporary recovery session established by clicking the password-reset email link — not a fresh login.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                password: { type: string, description: "8+ chars, 1 uppercase, 1 number, 1 special character" }
+      responses:
+        "200": { $ref: "#/components/responses/Success" }
+        "400": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
+  /schools:
+    get:
+      tags: [Schools]
+      summary: List schools for a picker
+      description: Public — no auth required. Used by the registration school picker before the user has a session.
+      security: []
+      responses:
+        "200":
+          description: Schools, alphabetically.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        name: { type: string }
 
   /courses:
     get:

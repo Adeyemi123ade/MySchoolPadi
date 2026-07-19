@@ -1,4 +1,5 @@
 export { authService } from "./auth.service";
+export { schoolsService } from "./schools.service";
 export { coursesService } from "./courses.service";
 export { enrollmentsService } from "./enrollments.service";
 export { announcementsService } from "./announcements.service";
