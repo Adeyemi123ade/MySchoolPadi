@@ -40,10 +40,10 @@ supabase gen types typescript --project-id <your-project-ref> > src/types/databa
 src/
   app/                 Next.js routes (route groups: (auth), (dashboard))
   components/
-    ui/                shadcn/ui primitives (not yet generated)
-    layout/             Header, Sidebar, Footer (not yet built)
-    shared/              Cross-feature reusable components
-    providers/            React Query provider, app-wide providers
+    ui/                shadcn/ui primitives (button, input, card, dialog, sheet, etc.)
+    layout/             Header, Sidebar, BottomNav, Footer, DashboardShell
+    shared/              Cross-feature reusable components (not yet built)
+    providers/            React Query provider, Toaster, app-wide providers
   features/            Feature-scoped modules (not yet built)
   hooks/               Custom hooks (e.g. useAuth)
   lib/
@@ -78,7 +78,7 @@ Where the Design System page and the separate Design-to-Code Specification disag
 
 ## Routing & auth
 
-Route groups mirror the Frontend Architecture routing diagram: `(auth)` for `/login`, `/register`, `/forgot-password` (full-screen layout), and `(dashboard)` for `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile` (sidebar + header shell). Pages currently render a placeholder only — no real UI has been implemented.
+Route groups mirror the Frontend Architecture routing diagram: `(auth)` for `/login`, `/register`, `/forgot-password` (full-screen layout), and `(dashboard)` for `/dashboard`, `/courses`, `/announcements`, `/notifications`, `/bookmarks`, `/settings`, `/profile` — wrapped in `DashboardShell` (Header + Sidebar on desktop, Header + Sheet drawer + BottomNav on mobile, Footer). The chrome is real; each page's own content is still a placeholder.
 
 `src/middleware.ts` refreshes the Supabase session on every request and redirects unauthenticated users away from protected routes to `/login`, and authenticated users away from auth routes to `/dashboard`.
 
@@ -116,11 +116,14 @@ Two layers, documented two different ways:
 
   There's intentionally no in-app `/api-docs` page yet — that would be a screen, and this pass is foundation-only.
 
+## A note on `components/ui/`
+
+These were hand-authored to match shadcn/ui's standard "new-york" style output, because `pnpm dlx shadcn add` couldn't reach `ui.shadcn.com` from the environment that built this foundation. They should behave identically to a normal `shadcn add` output and are safe to regenerate/diff via the CLI (`pnpm dlx shadcn@latest diff <component>`) from an environment with normal network access, if you want to confirm they're byte-for-byte current.
+
 ## Not yet built
 
-- Actual screen UI (per the Design System and User Flow Map)
-- shadcn/ui components beyond the base `cn()` helper
-- Header / Sidebar / Footer components
+- Actual screen UI (per the Design System and User Flow Map) — layout chrome (Header/Sidebar/BottomNav/Footer) exists, but page content is still placeholder
+- Feature-level components beyond the base `components/ui/` primitives (e.g. an actual CourseCard, AnnouncementCard — see Design System's Cards section)
 - Payment provider integration (webhook route to transition `payments.status`)
 - Resend email templates
 - Supabase Edge Functions
