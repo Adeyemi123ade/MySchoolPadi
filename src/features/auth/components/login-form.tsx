@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/form";
 import { PasswordInput } from "./password-input";
 import { ROUTES } from "@/constants/routes";
+import { friendlyAuthErrorMessage } from "@/lib/api/friendly-auth-error";
 
 type LoginValues = z.infer<typeof signInSchema>;
 
@@ -68,7 +69,7 @@ export function LoginForm() {
       `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
     );
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyAuthErrorMessage(error.message));
       return;
     }
     if (data?.url) window.location.href = data.url;

@@ -7,6 +7,7 @@ import { Megaphone, Plus } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SearchInput } from "@/components/shared/search-input";
 import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { AnnouncementHistoryItem } from "@/features/announcements/components/announcement-history-item";
@@ -23,7 +24,7 @@ export function AnnouncementHistoryView() {
   const [tab, setTab] = useState<Tab>("all");
   const [query, setQuery] = useState("");
 
-  const { data: announcements, isLoading, isError } = useMyAnnouncements();
+  const { data: announcements, isLoading, isError, refetch } = useMyAnnouncements();
 
   const filtered = useMemo(() => {
     let list = announcements ?? [];
@@ -68,11 +69,7 @@ export function AnnouncementHistoryView() {
           {isLoading &&
             Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
 
-          {isError && (
-            <p className="rounded-md border border-border p-4 text-body text-muted-foreground">
-              Couldn&apos;t load your announcements right now.
-            </p>
-          )}
+          {isError && <LoadError title="Couldn't load your announcements" onRetry={() => refetch()} />}
 
           {!isLoading && !isError && filtered.length === 0 && (
             <EmptyState

@@ -7,6 +7,7 @@ import { Megaphone, X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SearchInput } from "@/components/shared/search-input";
 import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnnouncementCard } from "@/features/announcements/components/announcement-card";
 import { useAnnouncements } from "@/features/announcements/hooks/use-announcements";
@@ -24,7 +25,7 @@ export function AnnouncementsFeedView() {
   const [tab, setTab] = useState<Tab>("all");
   const [query, setQuery] = useState("");
 
-  const { data: announcements, isLoading, isError } = useAnnouncements({ courseId });
+  const { data: announcements, isLoading, isError, refetch } = useAnnouncements({ courseId });
   const { data: bookmarks } = useBookmarks("announcement");
   const lastSeen = useAnnouncementsLastSeen();
 
@@ -91,11 +92,7 @@ export function AnnouncementsFeedView() {
           {isLoading &&
             Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
 
-          {isError && (
-            <p className="rounded-md border border-border p-4 text-body text-muted-foreground">
-              Couldn&apos;t load announcements right now.
-            </p>
-          )}
+          {isError && <LoadError title="Couldn't load announcements" onRetry={() => refetch()} />}
 
           {!isLoading && !isError && filtered.length === 0 && (
             <EmptyState

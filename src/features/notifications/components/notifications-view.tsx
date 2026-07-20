@@ -9,6 +9,7 @@ import type { LucideIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -49,7 +50,7 @@ function groupByDay(notifications: Notification[]) {
 export function NotificationsView() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("all");
-  const { data: notifications, isLoading, isError } = useNotifications();
+  const { data: notifications, isLoading, isError, refetch } = useNotifications();
   const markRead = useMarkNotificationRead();
   const markAllRead = useMarkAllNotificationsRead();
 
@@ -87,11 +88,7 @@ export function NotificationsView() {
           {isLoading &&
             Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
 
-          {isError && (
-            <p className="rounded-md border border-border p-4 text-body text-muted-foreground">
-              Couldn&apos;t load notifications right now.
-            </p>
-          )}
+          {isError && <LoadError title="Couldn't load your notifications" onRetry={() => refetch()} />}
 
           {!isLoading && !isError && filtered.length === 0 && (
             <EmptyState

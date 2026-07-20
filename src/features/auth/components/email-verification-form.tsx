@@ -10,6 +10,7 @@ import { OtpInput } from "./otp-input";
 import { createClient } from "@/lib/supabase/client";
 import { authService } from "@/services";
 import { ROUTES } from "@/constants/routes";
+import { friendlyAuthErrorMessage } from "@/lib/api/friendly-auth-error";
 
 const CODE_TTL_SECONDS = 165; // 02:45, matches the mockup
 const RESEND_COOLDOWN_SECONDS = 23;
@@ -46,7 +47,7 @@ export function EmailVerificationForm() {
       const { error } = await authService.verifyEmailOtp(supabase, email, code);
 
       if (error) {
-        toast.error(error.message);
+        toast.error(friendlyAuthErrorMessage(error.message));
         return;
       }
 

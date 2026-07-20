@@ -5,6 +5,7 @@ import { BookOpen } from "lucide-react";
 
 import { SearchInput } from "@/components/shared/search-input";
 import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CourseCard } from "@/features/courses/components/course-card";
 import { CreateCourseDialog } from "@/features/courses/components/create-course-dialog";
@@ -12,7 +13,7 @@ import { useMyCourses } from "@/features/courses/hooks/use-courses";
 
 export function CourseManagementView() {
   const [query, setQuery] = useState("");
-  const { data: courses, isLoading, isError } = useMyCourses();
+  const { data: courses, isLoading, isError, refetch } = useMyCourses();
 
   const filtered = useMemo(() => {
     if (!query.trim()) return courses ?? [];
@@ -38,9 +39,9 @@ export function CourseManagementView() {
         {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-32 w-full" />)}
 
         {isError && (
-          <p className="col-span-full rounded-md border border-border p-4 text-body text-muted-foreground">
-            Couldn&apos;t load your courses right now.
-          </p>
+          <div className="col-span-full">
+            <LoadError title="Couldn't load your courses" onRetry={() => refetch()} />
+          </div>
         )}
 
         {!isLoading && !isError && filtered.length === 0 && (

@@ -43,13 +43,13 @@ export function ComparisonSection() {
 
         <div className="relative mt-12 grid gap-6 sm:grid-cols-2">
           {HIGHLIGHTS.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="flex items-start gap-4 rounded-xl border border-white/10 bg-white/5 p-5">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-secondary/20 text-secondary">
+            <div key={title} className="flex items-start gap-4 rounded-xl bg-white p-5 shadow-xl">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
                 <Icon className="size-5" />
               </span>
               <div>
-                <h3 className="text-body font-semibold text-white">{title}</h3>
-                <p className="mt-1 text-caption text-white/60">{description}</p>
+                <h3 className="text-body font-semibold text-foreground">{title}</h3>
+                <p className="mt-1 text-caption text-muted-foreground">{description}</p>
               </div>
             </div>
           ))}

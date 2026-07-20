@@ -6,6 +6,7 @@ import { Download, Users } from "lucide-react";
 
 import { SearchInput } from "@/components/shared/search-input";
 import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,7 +28,7 @@ function downloadCsv(filename: string, rows: string[][]) {
 export function StudentListView() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: courses, isLoading: loadingCourses } = useMyCourses();
+  const { data: courses, isLoading: loadingCourses, isError: coursesError, refetch: refetchCourses } = useMyCourses();
 
   const courseIdParam = searchParams.get("courseId");
   const [courseId, setCourseId] = useState<string | undefined>(courseIdParam ?? undefined);
@@ -39,7 +40,7 @@ export function StudentListView() {
     }
   }, [courses, courseId]);
 
-  const { data: roster, isLoading: loadingRoster } = useCourseRoster(courseId);
+  const { data: roster, isLoading: loadingRoster, isError: rosterError, refetch: refetchRoster } = useCourseRoster(courseId);
   const selectedCourse = courses?.find((c) => c.id === courseId);
 
   const filtered = useMemo(() => {
@@ -68,6 +69,8 @@ export function StudentListView() {
 
       {loadingCourses ? (
         <Skeleton className="h-10 w-64" />
+      ) : coursesError ? (
+        <LoadError title="Couldn't load your courses" onRetry={() => refetchCourses()} />
       ) : courses && courses.length > 0 ? (
         <select
           value={courseId ?? ""}
@@ -116,7 +119,15 @@ export function StudentListView() {
                     </tr>
                   ))}
 
-                {!loadingRoster && filtered.length === 0 && (
+                {!loadingRoster && rosterError && (
+                  <tr>
+                    <td className="px-4 py-8" colSpan={3}>
+                      <LoadError title="Couldn't load this course's students" onRetry={() => refetchRoster()} />
+                    </td>
+                  </tr>
+                )}
+
+                {!loadingRoster && !rosterError && filtered.length === 0 && (
                   <tr>
                     <td className="px-4 py-8" colSpan={3}>
                       <EmptyState icon={Users} title="No students enrolled yet" />

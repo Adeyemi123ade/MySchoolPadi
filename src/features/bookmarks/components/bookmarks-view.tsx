@@ -5,6 +5,7 @@ import { Bookmark as BookmarkIcon } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AnnouncementCard } from "@/features/announcements/components/announcement-card";
 import { CourseCard } from "@/features/courses/components/course-card";
@@ -19,8 +20,18 @@ export function BookmarksView() {
   const [tab, setTab] = useState<Tab>("all");
   const { profile } = useAuth();
 
-  const { data: announcementBookmarks, isLoading: loadingAnnouncementBookmarks } = useBookmarks("announcement");
-  const { data: courseBookmarks, isLoading: loadingCourseBookmarks } = useBookmarks("course");
+  const {
+    data: announcementBookmarks,
+    isLoading: loadingAnnouncementBookmarks,
+    isError: announcementBookmarksError,
+    refetch: refetchAnnouncementBookmarks,
+  } = useBookmarks("announcement");
+  const {
+    data: courseBookmarks,
+    isLoading: loadingCourseBookmarks,
+    isError: courseBookmarksError,
+    refetch: refetchCourseBookmarks,
+  } = useBookmarks("course");
   const { data: announcements } = useAnnouncements();
   const { data: courses } = useCourses({ schoolId: profile?.school_id ?? undefined });
 
@@ -43,7 +54,13 @@ export function BookmarksView() {
   );
 
   const isLoading = loadingAnnouncementBookmarks || loadingCourseBookmarks;
+  const isError = announcementBookmarksError || courseBookmarksError;
   const isEmpty = bookmarkedAnnouncements.length === 0 && bookmarkedCourses.length === 0;
+
+  function retry() {
+    refetchAnnouncementBookmarks();
+    refetchCourseBookmarks();
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -59,7 +76,9 @@ export function BookmarksView() {
         <TabsContent value={tab} className="flex flex-col gap-3">
           {isLoading && Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)}
 
-          {!isLoading && tab === "all" && isEmpty && (
+          {!isLoading && isError && <LoadError title="Couldn't load your bookmarks" onRetry={retry} />}
+
+          {!isLoading && !isError && tab === "all" && isEmpty && (
             <EmptyState
               icon={BookmarkIcon}
               title="Your important updates saved"
@@ -67,11 +86,11 @@ export function BookmarksView() {
             />
           )}
 
-          {!isLoading && tab === "announcement" && bookmarkedAnnouncements.length === 0 && (
+          {!isLoading && !isError && tab === "announcement" && bookmarkedAnnouncements.length === 0 && (
             <EmptyState icon={BookmarkIcon} title="No bookmarked announcements" />
           )}
 
-          {!isLoading && tab === "course" && bookmarkedCourses.length === 0 && (
+          {!isLoading && !isError && tab === "course" && bookmarkedCourses.length === 0 && (
             <EmptyState icon={BookmarkIcon} title="No bookmarked courses" />
           )}
 

@@ -11,20 +11,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { useAnnouncement, usePublishAnnouncement, useDeleteAnnouncement } from "@/features/announcements/hooks/use-announcements";
 import { useBookmarks, useToggleBookmark } from "@/features/bookmarks/hooks/use-bookmarks";
 import { useAuth } from "@/hooks/use-auth";
 import { initials } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { announcementBadge } from "@/features/announcements/lib/badge";
+import { ApiFetchError } from "@/lib/api/fetch-json";
 import { ROUTES } from "@/constants/routes";
+import { FileQuestion } from "lucide-react";
 
 export default function AnnouncementDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const { profile } = useAuth();
 
-  const { data: announcement, isLoading, isError } = useAnnouncement(id);
+  const { data: announcement, isLoading, isError, error, refetch } = useAnnouncement(id);
+  const notFound = error instanceof ApiFetchError && error.status === 404;
   const { data: bookmarks } = useBookmarks("announcement");
   const toggleBookmark = useToggleBookmark();
   const publish = usePublishAnnouncement();
@@ -91,11 +96,15 @@ export default function AnnouncementDetailsPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      {isError && (
-        <p className="rounded-md border border-border p-6 text-center text-body text-muted-foreground">
-          Couldn&apos;t load this announcement. It may have been removed, or you don&apos;t have access to it.
-        </p>
+      {isError && notFound && (
+        <EmptyState
+          icon={FileQuestion}
+          title="This announcement isn't available"
+          description="It may have been removed, or you don't have access to it."
+        />
       )}
+
+      {isError && !notFound && <LoadError title="Couldn't load this announcement" onRetry={() => refetch()} />}
 
       {announcement && (
         <div className="flex flex-col gap-4 rounded-lg border border-border p-6">

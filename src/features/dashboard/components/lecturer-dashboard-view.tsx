@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMyCourses } from "@/features/courses/hooks/use-courses";
 import { useMyAnnouncements } from "@/features/announcements/hooks/use-announcements";
 import { timeBasedGreeting } from "@/features/dashboard/lib/greeting";
+import { LoadError } from "@/components/shared/load-error";
 import { StatCard } from "./stat-card";
 import { AnnouncementSummaryCard } from "./announcement-summary-card";
 import { EngagementOverviewCard } from "./engagement-overview-card";
@@ -38,8 +39,8 @@ const RECENT_ANNOUNCEMENTS_LIMIT = 5;
 
 export function LecturerDashboardView() {
   const { profile } = useAuth();
-  const { data: courses } = useMyCourses();
-  const { data: announcements } = useMyAnnouncements();
+  const { data: courses, isError: coursesError, refetch: refetchCourses } = useMyCourses();
+  const { data: announcements, isError: announcementsError, refetch: refetchAnnouncements } = useMyAnnouncements();
 
   const lastName = profile?.full_name?.split(" ").at(-1) ?? "there";
   const published = announcements?.filter((a) => a.status === "published").length ?? 0;
@@ -63,6 +64,16 @@ export function LecturerDashboardView() {
           {formatToday(new Date())}
         </span>
       </div>
+
+      {(coursesError || announcementsError) && (
+        <LoadError
+          title="Some of your dashboard couldn't load"
+          onRetry={() => {
+            if (coursesError) refetchCourses();
+            if (announcementsError) refetchAnnouncements();
+          }}
+        />
+      )}
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard icon={BookOpen} label="Courses" value={courses?.length ?? 0} accent="primary" />

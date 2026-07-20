@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { Megaphone } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useAnnouncements } from "@/features/announcements/hooks/use-announcements";
 import { AnnouncementCard } from "@/features/announcements/components/announcement-card";
 import { TodaysOverviewCard } from "@/features/dashboard/components/todays-overview-card";
 import { timeBasedGreeting } from "@/features/dashboard/lib/greeting";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "@/components/shared/empty-state";
+import { LoadError } from "@/components/shared/load-error";
 import { ROUTES } from "@/constants/routes";
 
 const RECENT_ANNOUNCEMENTS_LIMIT = 3;
 
 export function StudentDashboardView() {
   const { profile } = useAuth();
-  const { data: announcements, isLoading, isError } = useAnnouncements();
+  const { data: announcements, isLoading, isError, refetch } = useAnnouncements();
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "there";
   const recent = announcements?.slice(0, RECENT_ANNOUNCEMENTS_LIMIT) ?? [];
@@ -52,16 +55,10 @@ export function StudentDashboardView() {
               <Skeleton key={i} className="h-28 w-full" />
             ))}
 
-          {isError && (
-            <p className="rounded-md border border-border p-4 text-body text-muted-foreground">
-              Couldn&apos;t load announcements right now.
-            </p>
-          )}
+          {isError && <LoadError title="Couldn't load your announcements" onRetry={() => refetch()} />}
 
           {!isLoading && !isError && recent.length === 0 && (
-            <p className="rounded-md border border-border p-4 text-body text-muted-foreground">
-              No announcements yet.
-            </p>
+            <EmptyState icon={Megaphone} title="No announcements yet" description="New announcements from your courses will show up here." />
           )}
 
           {recent.map((announcement) => (

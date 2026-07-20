@@ -22,6 +22,7 @@ import { passwordSchema } from "@/lib/validations/auth";
 import { createClient } from "@/lib/supabase/client";
 import { authService } from "@/services";
 import { ROUTES } from "@/constants/routes";
+import { friendlyAuthErrorMessage } from "@/lib/api/friendly-auth-error";
 
 const STEPS = ["Personal Info", "Institution Info", "Account Security"];
 
@@ -106,7 +107,7 @@ export function LecturerRegistrationForm() {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(friendlyAuthErrorMessage(error.message));
         return;
       }
 
