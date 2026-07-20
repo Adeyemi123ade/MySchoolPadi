@@ -7,6 +7,7 @@ import { createCourseSchema } from "@/lib/validations/course";
 /**
  * GET /api/courses?schoolId=&search= — list courses. Auth required, open to any role.
  * Pass `mine=1` to list only the current lecturer's own courses instead.
+ * Pass `code=&schoolId=` to look up a single course by its exact code (Join with Course Code flow).
  */
 export async function GET(request: NextRequest) {
   try {
@@ -15,6 +16,14 @@ export async function GET(request: NextRequest) {
 
     if (searchParams.get("mine") === "1") {
       const { data, error } = await coursesService.listForLecturer(supabase, user.id);
+      if (error) throw error;
+      return apiSuccess(data);
+    }
+
+    const code = searchParams.get("code");
+    const schoolId = searchParams.get("schoolId");
+    if (code && schoolId) {
+      const { data, error } = await coursesService.getByCode(supabase, schoolId, code);
       if (error) throw error;
       return apiSuccess(data);
     }

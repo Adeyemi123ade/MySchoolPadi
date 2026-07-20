@@ -8,22 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useBookmarks, useToggleBookmark } from "@/features/bookmarks/hooks/use-bookmarks";
 import { useAuth } from "@/hooks/use-auth";
+import { announcementBadge } from "@/features/announcements/lib/badge";
 import { ROUTES } from "@/constants/routes";
 import type { AnnouncementWithAuthor } from "@/types";
-
-const NEW_WINDOW_HOURS = 48;
-
-function announcementBadge(announcement: AnnouncementWithAuthor) {
-  if (announcement.priority === "important") return { label: "IMPORTANT", variant: "destructive" as const };
-  if (announcement.priority === "reminder") return { label: "REMINDER", variant: "warning" as const };
-  if (announcement.priority === "update") return { label: "UPDATE", variant: "secondary" as const };
-
-  const publishedAt = announcement.published_at ?? announcement.created_at;
-  const hoursSincePublished = (Date.now() - new Date(publishedAt).getTime()) / (1000 * 60 * 60);
-  if (hoursSincePublished < NEW_WINDOW_HOURS) return { label: "NEW", variant: "success" as const };
-
-  return { label: "INFO", variant: "outline" as const };
-}
 
 export function AnnouncementCard({ announcement }: { announcement: AnnouncementWithAuthor }) {
   const { profile } = useAuth();

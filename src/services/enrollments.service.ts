@@ -22,7 +22,7 @@ export const enrollmentsService = {
   async listForCourse(client: Client, courseId: string) {
     return client
       .from("enrollments")
-      .select("*, student:profiles(id, full_name, avatar_url)")
+      .select("*, student:profiles(id, full_name, avatar_url, matric_number)")
       .eq("course_id", courseId);
   },
 

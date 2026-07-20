@@ -104,4 +104,9 @@ export const authService = {
   async getProfile(client: Client, userId: string) {
     return client.from("profiles").select("*").eq("id", userId).single();
   },
+
+  /** Updates the caller's own profile row. RLS restricts this to `id = auth.uid()` — a caller can never update someone else's profile. */
+  async updateProfile(client: Client, userId: string, input: { full_name?: string; phone_number?: string }) {
+    return client.from("profiles").update(input).eq("id", userId).select().single();
+  },
 };
