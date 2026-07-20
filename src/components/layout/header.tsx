@@ -18,16 +18,7 @@ import { useUnreadNotificationCount } from "@/features/notifications/hooks/use-n
 import { createClient } from "@/lib/supabase/client";
 import { authService } from "@/services";
 import { ROUTES } from "@/constants/routes";
-
-function initials(name?: string | null) {
-  if (!name) return "?";
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
+import { initials } from "@/lib/format";
 
 export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const { profile } = useAuth();
@@ -51,8 +42,10 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
 
       <div className="flex-1" />
 
-      <Button variant="ghost" size="icon" aria-label="Search">
-        <Search className="size-5" />
+      <Button variant="ghost" size="icon" aria-label="Search" asChild>
+        <Link href={ROUTES.search}>
+          <Search className="size-5" />
+        </Link>
       </Button>
 
       <Button variant="ghost" size="icon" className="relative" aria-label="Notifications" asChild>

@@ -221,6 +221,14 @@ paths:
           in: query
           description: Case-insensitive title search
           schema: { type: string }
+        - name: mine
+          in: query
+          description: Pass `1` to list only the current lecturer's own courses instead.
+          schema: { type: string, enum: ["1"] }
+        - name: code
+          in: query
+          description: Combined with `schoolId`, looks up a single course by its exact code (Join with Course Code flow) instead of listing.
+          schema: { type: string }
       responses:
         "200":
           description: Courses, each with the lecturer's public profile fields embedded.
@@ -316,6 +324,11 @@ paths:
     get:
       tags: [Enrollments]
       summary: List the current user's own enrollments
+      parameters:
+        - name: courseId
+          in: query
+          description: Instead list everyone enrolled in this course (that course's own lecturer/admin only — RLS-enforced).
+          schema: { type: string, format: uuid }
       responses:
         "200":
           description: Enrollments, each with the full course row embedded.
@@ -841,6 +854,7 @@ components:
                 id: { type: string, format: uuid }
                 full_name: { type: string, nullable: true }
                 avatar_url: { type: string, nullable: true }
+                department: { type: string, nullable: true }
 
     Notification:
       type: object
