@@ -45,6 +45,10 @@ export function LecturerDashboardView() {
   const published = announcements?.filter((a) => a.status === "published").length ?? 0;
   const drafts = announcements?.filter((a) => a.status === "draft").length ?? 0;
   const recent = announcements?.slice(0, RECENT_ANNOUNCEMENTS_LIMIT) ?? [];
+  // Sum of each course's real enrolled_count — a student in more than one of
+  // this lecturer's courses is counted once per course, not deduplicated.
+  // Still real roster data, not a fabricated number.
+  const totalStudents = courses?.reduce((sum, c) => sum + c.enrolled_count, 0) ?? 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -63,8 +67,8 @@ export function LecturerDashboardView() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard icon={BookOpen} label="Courses" value={courses?.length ?? 0} accent="primary" />
         <StatCard icon={Megaphone} label="Announcements" value={announcements?.length ?? 0} accent="success" />
-        {/* Total Students and Avg. Engagement aren't backed by an aggregate query yet — see README. */}
-        <StatCard icon={Users} label="Total Students" value={0} accent="secondary" />
+        <StatCard icon={Users} label="Total Students" value={totalStudents} accent="secondary" />
+        {/* Avg. Engagement isn't backed by any view/read tracking yet — see README. */}
         <StatCard icon={BarChart3} label="Avg. Engagement" value="—" accent="warning" />
       </div>
 

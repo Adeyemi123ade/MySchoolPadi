@@ -21,6 +21,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          // Applies the saved theme before first paint, avoiding a flash of the wrong theme.
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('myschoolpadi:theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}`,
+          }}
+        />
+      </head>
       <body className={`${inter.variable} antialiased`}>
         <AppProviders>{children}</AppProviders>
       </body>

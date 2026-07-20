@@ -65,6 +65,32 @@ export function useCreateAnnouncement() {
   });
 }
 
+export type UpdateAnnouncementInput = {
+  title?: string;
+  body?: string;
+  priority?: AnnouncementPriority;
+};
+
+/** Updates an announcement's title/body/priority. */
+export function useUpdateAnnouncement() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateAnnouncementInput }) =>
+      fetchJson<Announcement>(`/api/announcements/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["announcements"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
 /** Publishes a draft announcement. */
 export function usePublishAnnouncement() {
   const queryClient = useQueryClient();

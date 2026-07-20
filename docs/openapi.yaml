@@ -187,6 +187,32 @@ paths:
         "400": { $ref: "#/components/responses/Error" }
         "422": { $ref: "#/components/responses/ValidationError" }
 
+  /profile:
+    patch:
+      tags: [Auth]
+      summary: Update the current user's own profile
+      description: RLS restricts this to the caller's own row — only full name and phone number are editable here.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fullName: { type: string, maxLength: 120 }
+                phoneNumber: { type: string, maxLength: 20 }
+      responses:
+        "200":
+          description: Updated profile.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { $ref: "#/components/schemas/Profile" }
+        "401": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/ValidationError" }
+
   /schools:
     get:
       tags: [Schools]

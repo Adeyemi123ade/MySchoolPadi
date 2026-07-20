@@ -14,7 +14,9 @@ export function useEnrollments() {
   });
 }
 
-type EnrollmentWithStudent = Enrollment & { student: Pick<Profile, "id" | "full_name" | "avatar_url"> | null };
+type EnrollmentWithStudent = Enrollment & {
+  student: Pick<Profile, "id" | "full_name" | "avatar_url" | "matric_number"> | null;
+};
 
 /** The roster (enrolled students) for a course. Only the course's own lecturer or an admin can see this (RLS). */
 export function useCourseRoster(courseId?: string) {

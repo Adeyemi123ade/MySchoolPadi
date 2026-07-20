@@ -1,3 +1,10 @@
+import { Suspense } from "react";
+import { StudentListView } from "@/features/students/components/student-list-view";
+
 export default function StudentsPage() {
-  return <p className="text-body text-muted-foreground">Students — route placeholder.</p>;
+  return (
+    <Suspense>
+      <StudentListView />
+    </Suspense>
+  );
 }
