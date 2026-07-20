@@ -86,6 +86,14 @@ The Header was originally built purple with no mockup to go on; once real screen
 
 **Navigation is role-aware** (`src/constants/nav.ts`: `getSidebarNavItems`/`getBottomNavItems`). Students see Dashboard/Courses/Announcements/Notifications/Bookmarks/Profile; lecturers see Dashboard/Courses/Announcements/Students/Analytics/Calendar/Messages/Settings, per their respective dashboard mockups — these are genuinely different information architectures, not a reskin of the same nav.
 
+### Landing page (`/`)
+
+Public, unauthenticated entry point (`src/features/landing/`): sticky nav with anchor links, Hero, Why Choose (4 value props), How It Works (3 steps), Designed for Everyone (Student/Lecturer `Tabs`, reusing the registration wizard's illustrations), a "the old way vs. MySchoolPadi" comparison, an FAQ `Accordion`, a bottom CTA banner, and a footer.
+
+Two source mockups were provided for this screen. Both leaned on social proof this product doesn't have yet: fabricated user-count stats, a testimonial attributed to a named person, and — in one mockup — implied endorsement by specific named Nigerian universities. None of that is real, so none of it was built. Every section that would normally carry that kind of claim was reframed around what's actually true today: real feature descriptions, a real "old way vs. new way" comparison, and an honest FAQ (e.g. "is this available for my institution?" answers "early access and growing," not a fabricated list of partner schools). Nothing here claims a user count, a named quote, or an institutional partnership that doesn't exist.
+
+Added `Accordion` and `Tabs` to `src/components/ui/` (Radix-based, same hand-authored pattern as the rest of `components/ui/` — see the note below) to support the FAQ and the Student/Lecturer toggle.
+
 ### Dashboard (`/dashboard`)
 
 `DashboardPage` branches on `profile.role` and renders `StudentDashboardView` or `LecturerDashboardView` (`src/features/dashboard/components/`).
