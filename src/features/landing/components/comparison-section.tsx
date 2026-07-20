@@ -26,14 +26,18 @@ const HIGHLIGHTS: { icon: LucideIcon; title: string; description: string }[] = [
 
 export function ComparisonSection() {
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink-950 via-ink-900 to-ink-800 px-6 py-14 sm:px-12 sm:py-16">
-        <div
-          aria-hidden
-          className="absolute -bottom-20 -right-20 size-72 rounded-full bg-secondary/25 blur-[100px]"
-        />
+    <section className="relative overflow-hidden bg-gradient-to-br from-ink-950 via-ink-900 to-ink-800 py-16 md:py-24">
+      <div
+        aria-hidden
+        className="absolute -bottom-20 -right-20 size-72 rounded-full bg-secondary/25 blur-[100px]"
+      />
+      <div
+        aria-hidden
+        className="absolute -top-24 -left-20 size-72 rounded-full bg-primary/20 blur-[110px]"
+      />
 
-        <div className="relative mx-auto max-w-2xl text-center">
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-h2 font-bold text-white">Built to replace the group chat</h2>
           <p className="mt-3 text-body-lg text-white/70">
             We built MySchoolPadi because course communication deserves better than a chat thread
@@ -41,7 +45,7 @@ export function ComparisonSection() {
           </p>
         </div>
 
-        <div className="relative mt-12 grid gap-6 sm:grid-cols-2">
+        <div className="mt-12 grid gap-6 sm:grid-cols-2">
           {HIGHLIGHTS.map(({ icon: Icon, title, description }) => (
             <div key={title} className="flex items-start gap-4 rounded-xl bg-white p-5 shadow-xl">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">

@@ -21,8 +21,8 @@ export function HeroSection() {
         className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.06),_transparent_60%)]"
       />
 
-      <div className="relative mx-auto grid max-w-7xl items-end gap-4 px-4 pt-14 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:pt-20">
-        <div className="flex flex-col items-start gap-6 pb-14 lg:pb-24">
+      <div className="relative mx-auto grid max-w-7xl items-center gap-4 px-4 pt-14 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:pt-20 lg:pb-0">
+        <div className="flex flex-col items-start gap-6 pb-14 lg:pb-16">
           <span className="flex items-center gap-2 rounded-pill border border-white/15 bg-white/10 px-3 py-1.5 text-caption font-medium text-white/90">
             <span className="size-1.5 shrink-0 rounded-pill bg-success" />
             Free for every student &amp; lecturer &middot; No credit card required
@@ -69,7 +69,7 @@ export function HeroSection() {
           </ul>
         </div>
 
-        <div className="relative mx-auto flex w-full max-w-sm justify-center lg:max-w-none lg:justify-end">
+        <div className="relative mx-auto flex w-full max-w-sm items-end justify-center self-end lg:max-w-none lg:justify-end">
           <div className="relative">
             <div
               aria-hidden

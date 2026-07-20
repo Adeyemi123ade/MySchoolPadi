@@ -84,7 +84,7 @@ export function ForYouSection() {
                   alt={audience.imageAlt}
                   fill
                   sizes="(min-width: 768px) 384px, 90vw"
-                  className="object-contain object-bottom"
+                  className="-scale-x-100 object-contain object-bottom"
                 />
               </div>
 
