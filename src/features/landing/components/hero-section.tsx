@@ -1,107 +1,99 @@
+import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { ArrowRight, Bell, CheckCircle2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ROUTES } from "@/constants/routes";
-
-const FEATURE_HIGHLIGHTS = [
-  "One feed for every course announcement",
-  "Separate dashboards for students and lecturers",
-  "Secure accounts with email verification",
-];
 
 export function HeroSection() {
   return (
-    <section className="overflow-hidden bg-gradient-to-b from-primary/5 to-background">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 md:py-24 lg:grid-cols-2 lg:px-8">
-        <div className="flex flex-col items-start gap-6">
-          <span className="rounded-pill border border-primary/20 bg-primary/10 px-3 py-1 text-caption font-medium text-primary">
-            Now in early access
+    <section className="relative overflow-hidden bg-gradient-to-br from-ink-950 via-ink-900 to-ink-800">
+      <div
+        aria-hidden
+        className="absolute -top-32 right-[-10%] size-[26rem] rounded-full bg-secondary/30 blur-[110px]"
+      />
+      <div
+        aria-hidden
+        className="absolute bottom-0 left-[-10%] size-[22rem] rounded-full bg-primary/25 blur-[110px]"
+      />
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,255,255,0.06),_transparent_60%)]"
+      />
+
+      <div className="relative mx-auto grid max-w-7xl items-end gap-4 px-4 pt-14 sm:px-6 lg:grid-cols-2 lg:gap-8 lg:px-8 lg:pt-20">
+        <div className="flex flex-col items-start gap-6 pb-14 lg:pb-24">
+          <span className="flex items-center gap-2 rounded-pill border border-white/15 bg-white/10 px-3 py-1.5 text-caption font-medium text-white/90">
+            <span className="size-1.5 shrink-0 rounded-pill bg-success" />
+            Free for every student &amp; lecturer &middot; No credit card required
           </span>
 
-          <h1 className="text-h1 font-bold text-foreground">
-            Everything about your school life, in one clear feed.
+          <h1 className="text-display font-bold text-white">
+            Everything about
+            <br />
+            <span className="text-secondary">your school life.</span>
+            <br />
+            One clear feed.
           </h1>
 
-          <p className="text-body-lg text-muted-foreground">
+          <p className="max-w-md text-body-lg text-white/70">
             MySchoolPadi brings course announcements, schedules and updates out of scattered group
-            chats and into a single, organised place — built separately for how students and
-            lecturers actually use it.
+            chats and into one organised place — built separately for how students and lecturers
+            actually use it.
           </p>
 
-          <ul className="flex flex-col gap-2">
-            {FEATURE_HIGHLIGHTS.map((item) => (
-              <li key={item} className="flex items-center gap-2 text-body text-foreground">
-                <CheckCircle2 className="size-5 shrink-0 text-success" />
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button size="lg" className="bg-secondary text-white hover:bg-secondary/90" asChild>
+              <Link href={ROUTES.register}>
+                Get Started — It&apos;s Free
+                <ArrowRight />
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="border-white/25 bg-transparent text-white hover:bg-white/10"
+              asChild
+            >
+              <a href="#how-it-works">See How It Works</a>
+            </Button>
+          </div>
+
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            {["Role-based dashboards", "Real-time announcements", "Secure verified accounts"].map((item) => (
+              <li key={item} className="flex items-center gap-1.5 text-caption text-white/60">
+                <CheckCircle2 className="size-3.5 shrink-0 text-secondary" />
                 {item}
               </li>
             ))}
           </ul>
-
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button size="lg" asChild>
-              <Link href={ROUTES.register}>Get Started — It&apos;s Free</Link>
-            </Button>
-            <Button size="lg" variant="secondary" asChild>
-              <Link href={ROUTES.login}>Log in</Link>
-            </Button>
-          </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-sm">
-          <div className="rounded-xl border border-border bg-card p-3 shadow-xl">
-            <div className="rounded-lg border border-border bg-background p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-caption text-muted-foreground">Good morning,</p>
-                  <p className="text-body font-semibold text-foreground">Amaka 👋</p>
-                </div>
-                <div className="size-9 rounded-pill bg-primary/10" />
-              </div>
+        <div className="relative mx-auto flex w-full max-w-sm justify-center lg:max-w-none lg:justify-end">
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute inset-x-6 top-6 bottom-0 rounded-full bg-secondary/35 blur-3xl"
+            />
+            <Image
+              src="/images/auth/student-illustration.webp"
+              alt="A MySchoolPadi student, smiling, carrying textbooks and a backpack"
+              width={458}
+              height={648}
+              priority
+              className="relative z-10 h-auto w-[240px] object-contain sm:w-[300px] lg:w-[380px] xl:w-[420px]"
+            />
 
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <div className="rounded-md border border-border p-3">
-                  <p className="text-h4 font-bold text-foreground">4</p>
-                  <p className="text-caption text-muted-foreground">Announcements</p>
-                </div>
-                <div className="rounded-md border border-border p-3">
-                  <p className="text-h4 font-bold text-foreground">3</p>
-                  <p className="text-caption text-muted-foreground">Courses</p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-col gap-2">
-                <div className="rounded-md border border-border p-3">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="success">NEW</Badge>
-                  </div>
-                  <p className="mt-2 text-body font-semibold text-foreground">
-                    CSC 301 — Assignment 3 posted
-                  </p>
-                  <p className="text-caption text-muted-foreground">Dr. Bello &middot; 2h ago</p>
-                </div>
-                <div className="rounded-md border border-border p-3">
-                  <div className="flex items-center justify-between">
-                    <Badge variant="warning">REMINDER</Badge>
-                  </div>
-                  <p className="mt-2 text-body font-semibold text-foreground">
-                    Mid-semester test moves to Friday
-                  </p>
-                  <p className="text-caption text-muted-foreground">Dr. Okonkwo &middot; 1d ago</p>
-                </div>
+            <div className="absolute bottom-10 -left-4 z-20 flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-xl sm:-left-10">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-pill bg-success/10 text-success">
+                <Bell className="size-4" />
+              </span>
+              <div>
+                <p className="text-caption font-semibold text-foreground">New announcement</p>
+                <p className="text-caption text-muted-foreground">CSC 301 &middot; just now</p>
               </div>
             </div>
           </div>
-
-          <div
-            aria-hidden
-            className="absolute -right-6 -top-6 -z-10 size-40 rounded-full bg-secondary/20 blur-2xl"
-          />
-          <div
-            aria-hidden
-            className="absolute -bottom-8 -left-8 -z-10 size-40 rounded-full bg-primary/20 blur-2xl"
-          />
         </div>
       </div>
     </section>

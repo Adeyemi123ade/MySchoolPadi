@@ -40,8 +40,11 @@ export function WhyChooseSection() {
 
       <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {VALUE_PROPS.map(({ icon: Icon, title, description }) => (
-          <div key={title} className="flex flex-col gap-3 rounded-lg border border-border p-6">
-            <span className="flex size-11 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <div
+            key={title}
+            className="flex flex-col gap-3 rounded-lg border border-border p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
+          >
+            <span className="flex size-11 items-center justify-center rounded-md bg-gradient-to-br from-primary/15 to-secondary/15 text-primary">
               <Icon className="size-5" />
             </span>
             <h3 className="text-h4 font-semibold text-foreground">{title}</h3>
