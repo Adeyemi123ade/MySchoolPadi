@@ -53,7 +53,12 @@ export function StudentRegistrationForm() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { data: schools, isLoading: schoolsLoading } = useSchools();
+  const {
+    data: schools,
+    isLoading: schoolsLoading,
+    isError: schoolsFailed,
+    refetch: refetchSchools,
+  } = useSchools();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -100,7 +105,7 @@ export function StudentRegistrationForm() {
   }
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-1 flex-col gap-6">
       <RegistrationStepper steps={STEPS} currentStep={step} />
 
       <div>
@@ -111,7 +116,7 @@ export function StudentRegistrationForm() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
+          className="flex flex-1 flex-col justify-center gap-5"
           onKeyDown={(e) => {
             if (e.key === "Enter" && step < STEPS.length) e.preventDefault();
           }}
@@ -201,9 +206,21 @@ export function StudentRegistrationForm() {
                   <FormItem>
                     <FormLabel>School / Institution</FormLabel>
                     <FormControl>
-                      <Select value={field.value} onValueChange={field.onChange} disabled={schoolsLoading}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={schoolsLoading || schoolsFailed}
+                      >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder={schoolsLoading ? "Loading schools..." : "Select your school"} />
+                          <SelectValue
+                            placeholder={
+                              schoolsLoading
+                                ? "Loading schools..."
+                                : schoolsFailed
+                                  ? "Couldn't load schools"
+                                  : "Select your school"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {schools?.map((school) => (
@@ -214,7 +231,20 @@ export function StudentRegistrationForm() {
                         </SelectContent>
                       </Select>
                     </FormControl>
-                    {!schoolsLoading && schools?.length === 0 && (
+                    {schoolsFailed && (
+                      <p className="text-caption text-destructive">
+                        Couldn&apos;t load the school list.{" "}
+                        <button
+                          type="button"
+                          onClick={() => refetchSchools()}
+                          className="font-medium underline underline-offset-2"
+                        >
+                          Try again
+                        </button>{" "}
+                        or skip this step — it can be set later.
+                      </p>
+                    )}
+                    {!schoolsLoading && !schoolsFailed && schools?.length === 0 && (
                       <p className="text-caption text-muted-foreground">
                         No schools listed yet — you can skip this and it&apos;ll be assigned to your account later.
                       </p>
