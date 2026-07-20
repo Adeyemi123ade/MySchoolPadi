@@ -62,9 +62,10 @@ export function LoginForm() {
 
   async function handleGoogleSignIn() {
     const supabase = createClient();
+    const next = searchParams.get("redirectTo") ?? ROUTES.dashboard;
     const { data, error } = await authService.signInWithGoogle(
       supabase,
-      `${window.location.origin}/dashboard`,
+      `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
     );
     if (error) {
       toast.error(error.message);

@@ -175,6 +175,6 @@ These were hand-authored to match shadcn/ui's standard "new-york" style output, 
 
 ### Requires your setup to actually work
 
-- **Google sign-in**: the button/redirect on `/login` is wired up, but does nothing until you enable the Google provider under Authentication → Providers in your Supabase dashboard
+- **Google sign-in**: `/login`'s Google button redirects through `src/app/auth/callback/route.ts` (which exchanges the OAuth code for a session) before landing on `/dashboard`. It does nothing until you (1) create a Google OAuth client and add `https://<project-ref>.supabase.co/auth/v1/callback` as its authorized redirect URI, (2) paste that client's ID/secret into Authentication → Providers → Google in your Supabase dashboard, and (3) add `http://localhost:3000/auth/callback` (and your production equivalent) to Authentication → URL Configuration → Redirect URLs
 - **Email OTP verification**: `/verify-email` expects Supabase Auth's default 6-digit signup code email. If your project's email template was customized to a magic-link instead, the OTP input won't have anything to match against
 - **Password reset redirect**: `/api/auth/forgot-password` sends `${NEXT_PUBLIC_APP_URL}/reset-password` as the redirect — make sure that URL is in your Supabase Auth allow list (see the auth setup step in Getting Started)
