@@ -26,6 +26,8 @@ export const ROUTES = {
   // Lecturer-only
   students: "/students",
   analytics: "/analytics",
+
+  // Both roles (lecturer creates, student views)
   calendar: "/calendar",
   messages: "/messages",
 } as const;

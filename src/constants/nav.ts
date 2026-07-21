@@ -26,6 +26,8 @@ const STUDENT_SIDEBAR_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: ROUTES.dashboard, icon: LayoutDashboard },
   { label: "Courses", href: ROUTES.courses, icon: BookOpen },
   { label: "Announcements", href: ROUTES.announcements, icon: Megaphone },
+  { label: "Calendar", href: ROUTES.calendar, icon: CalendarDays },
+  { label: "Messages", href: ROUTES.messages, icon: MessageSquare },
   { label: "Notifications", href: ROUTES.notifications, icon: Bell },
   { label: "Bookmarks", href: ROUTES.bookmarks, icon: Bookmark },
   { label: "Profile", href: ROUTES.profile, icon: User },
