@@ -1,3 +1,5 @@
+import { NotificationsView } from "@/features/notifications/components/notifications-view";
+
 export default function NotificationsPage() {
-  return <p className="text-body text-muted-foreground">Notifications — route placeholder.</p>;
+  return <NotificationsView />;
 }

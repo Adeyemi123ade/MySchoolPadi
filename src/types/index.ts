@@ -13,6 +13,7 @@ export type { School } from "./school";
 export type { Course, CourseWithLecturer } from "./course";
 export type { Enrollment, EnrollmentWithCourse } from "./enrollment";
 export type { Announcement, AnnouncementWithAuthor } from "./announcement";
+export type { Message, MessageWithDetails } from "./message";
 export type { Notification } from "./notification";
 export type { Bookmark } from "./bookmark";
 export type { Payment } from "./payment";

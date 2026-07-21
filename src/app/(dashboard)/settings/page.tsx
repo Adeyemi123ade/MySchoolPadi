@@ -1,3 +1,5 @@
+import { SettingsView } from "@/features/settings/components/settings-view";
+
 export default function SettingsPage() {
-  return <p className="text-body text-muted-foreground">Settings — route placeholder.</p>;
+  return <SettingsView />;
 }

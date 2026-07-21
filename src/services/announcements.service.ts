@@ -14,7 +14,7 @@ export const announcementsService = {
   async listPublished(client: Client, params?: { courseId?: string; schoolId?: string }) {
     let query = client
       .from("announcements")
-      .select("*, author:profiles(id, full_name, avatar_url)")
+      .select("*, author:profiles(id, full_name, avatar_url, department)")
       .eq("status", "published");
 
     if (params?.courseId) query = query.eq("course_id", params.courseId);
@@ -32,7 +32,7 @@ export const announcementsService = {
   async getById(client: Client, id: string) {
     return client
       .from("announcements")
-      .select("*, author:profiles(id, full_name, avatar_url)")
+      .select("*, author:profiles(id, full_name, avatar_url, department)")
       .eq("id", id)
       .single();
   },

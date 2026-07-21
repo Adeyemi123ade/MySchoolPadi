@@ -1,3 +1,11 @@
+"use client";
+
+import { useAuth } from "@/hooks/use-auth";
+import { MyCoursesView } from "@/features/courses/components/my-courses-view";
+import { CourseManagementView } from "@/features/courses/components/course-management-view";
+
 export default function CoursesPage() {
-  return <p className="text-body text-muted-foreground">Courses — route placeholder.</p>;
+  const { profile } = useAuth();
+
+  return profile?.role === "lecturer" ? <CourseManagementView /> : <MyCoursesView />;
 }

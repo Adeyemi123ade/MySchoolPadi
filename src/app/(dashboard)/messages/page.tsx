@@ -1,3 +1,10 @@
+import { Suspense } from "react";
+import { MessagesView } from "@/features/messages/components/messages-view";
+
 export default function MessagesPage() {
-  return <p className="text-body text-muted-foreground">Messages — route placeholder.</p>;
+  return (
+    <Suspense>
+      <MessagesView />
+    </Suspense>
+  );
 }

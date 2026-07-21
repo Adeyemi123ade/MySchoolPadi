@@ -13,16 +13,21 @@ export const ROUTES = {
   dashboard: "/dashboard",
   courses: "/courses",
   course: (id: string) => `/courses/${id}`,
+  joinCourse: "/courses/join",
   announcements: "/announcements",
   announcement: (id: string) => `/announcements/${id}`,
+  newAnnouncement: "/announcements/new",
   notifications: "/notifications",
   bookmarks: "/bookmarks",
+  search: "/search",
   profile: "/profile",
   settings: "/settings",
 
   // Lecturer-only
   students: "/students",
   analytics: "/analytics",
+
+  // Both roles (lecturer creates, student views)
   calendar: "/calendar",
   messages: "/messages",
 } as const;
@@ -33,6 +38,7 @@ export const PROTECTED_ROUTE_PREFIXES = [
   ROUTES.announcements,
   ROUTES.notifications,
   ROUTES.bookmarks,
+  ROUTES.search,
   ROUTES.settings,
   ROUTES.profile,
   ROUTES.students,

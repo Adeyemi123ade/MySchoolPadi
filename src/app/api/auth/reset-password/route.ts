@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { authService } from "@/services";
 import { apiError, apiErrorFromException, apiSuccess } from "@/lib/api/response";
+import { friendlyAuthErrorMessage } from "@/lib/api/friendly-auth-error";
 import { resetPasswordSchema } from "@/lib/validations/auth";
 import { requireUser } from "@/lib/api/auth";
 
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     const { error } = await authService.updatePassword(supabase, password);
-    if (error) return apiError(error.message, 400);
+    if (error) return apiError(friendlyAuthErrorMessage(error.message), 400);
 
     return apiSuccess({ success: true });
   } catch (error) {
