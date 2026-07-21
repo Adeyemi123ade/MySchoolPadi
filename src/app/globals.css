@@ -27,6 +27,14 @@
   --color-neutral-100: #f3f4f6;
   --color-background: #f8f4fc;
 
+  /* Marketing "ink" scale — a deep purple-navy used only by the public
+     landing page's dark hero + sticky nav, distinct from `.dark` mode
+     (which governs the authenticated app's theme toggle). */
+  --color-ink-950: #0f0b2e;
+  --color-ink-900: #16103f;
+  --color-ink-800: #201659;
+  --color-ink-700: #2c1e78;
+
   /* Semantic surface / text mapping (light mode) */
   --background: #ffffff;
   --foreground: var(--color-neutral-900);
@@ -130,6 +138,11 @@
   --color-neutral-300: var(--color-neutral-300);
   --color-neutral-200: var(--color-neutral-200);
   --color-neutral-100: var(--color-neutral-100);
+
+  --color-ink-950: var(--color-ink-950);
+  --color-ink-900: var(--color-ink-900);
+  --color-ink-800: var(--color-ink-800);
+  --color-ink-700: var(--color-ink-700);
 
   --radius-xs: var(--radius-xs);
   --radius-sm: var(--radius-sm);

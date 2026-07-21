@@ -100,7 +100,7 @@ Added `Accordion` and `Tabs` to `src/components/ui/` (Radix-based, same hand-aut
 
 **Student view**: greeting, "Today's Overview" stat card, Recent Announcements list. Wired to real data where the backend supports it — announcements count + list (`GET /api/announcements`), bookmark toggle (`POST`/`DELETE /api/bookmarks`), notification bell badge (`GET /api/notifications`). "Lectures Today" / "Assignments" / "Events" show `0` — no schema for those yet. The mockup's floating "+" button was left out; unclear purpose for a student account.
 
-**Lecturer view**: greeting, 4 stat cards (Courses/Announcements/Total Students/Avg. Engagement), Announcement Summary, Engagement Overview, Upcoming Lectures, Recent Announcements. Wired to real data: Courses count (`GET /api/courses?mine=1`), Announcements count + Published/Draft breakdown + Recent list (`GET /api/announcements?mine=1`). **Total Students, Avg. Engagement, "Scheduled" announcement count, Total Views, the Engagement Overview chart, and Upcoming Lectures are not backed by real data** — no aggregate enrollment-count query, no view/engagement tracking, no lecture-schedule table exist yet. Rather than fabricate numbers or a fake chart, these render as `0`/`—`/honest empty states ("No engagement data yet", "No lecture schedule yet"). The mockup's "You have N classes today" banner was left out entirely for the same reason. Per the `dataviz` skill's own guidance ("sometimes the answer is not a chart"), Engagement Overview is an empty state, not a chart with invented data.
+**Lecturer view**: greeting, 4 stat cards (Courses/Announcements/Total Students/Avg. Engagement), Announcement Summary, Engagement Overview, Upcoming Lectures, Recent Announcements. Wired to real data: Courses count (`GET /api/courses?mine=1`), Announcements count + Published/Draft breakdown + Recent list (`GET /api/announcements?mine=1`), **Total Students** (sum of each course's real `enrolled_count` — a student enrolled in more than one of the lecturer's courses is counted once per course, not deduplicated, but it's real roster data, not a fabricated number). **Avg. Engagement, "Scheduled" announcement count, Total Views, the Engagement Overview chart, and Upcoming Lectures are still not backed by real data** — no view/engagement tracking, no lecture-schedule table exist yet. Rather than fabricate numbers or a fake chart, these render as `—`/honest empty states ("No engagement data yet", "No lecture schedule yet"). The mockup's "You have N classes today" banner was left out entirely for the same reason. Per the `dataviz` skill's own guidance ("sometimes the answer is not a chart"), Engagement Overview is an empty state, not a chart with invented data.
 
 Announcement badges (IMPORTANT / REMINDER / UPDATE / NEW / INFO) are derived, not stored: `important`/`reminder`/`update` map directly from `announcements.priority`; `normal`-priority announcements show NEW if published within the last 48 hours, otherwise INFO.
 
@@ -120,6 +120,39 @@ Only Step 1 of each registration wizard was shown in the source mockup; Steps 2 
 
 `src/middleware.ts` refreshes the Supabase session on every request and redirects unauthenticated users away from protected routes to `/login`, and authenticated users away from auth routes to `/dashboard`. `/reset-password` is deliberately excluded from both checks — see the comment in `src/constants/routes.ts` for why.
 
+### The rest of the app (student + lecturer screens)
+
+Built from the full student mobile mockup set (10 screens) and lecturer desktop mockup set (8 screens). All routes below are real, data-wired screens, not placeholder chrome — every list, count, and form actually reads from and writes to Supabase through the API layer.
+
+| Route | Student | Lecturer |
+| --- | --- | --- |
+| `/courses` | My Courses grid (enrolled courses, `GET /api/enrollments`) | Course Management grid (own courses + Add Course dialog, `GET /api/courses?mine=1`) |
+| `/courses/join` | Join with Course Code (exact lookup, `GET /api/courses?code=&schoolId=`) or Browse Courses (`GET /api/courses`) | — |
+| `/announcements` | Announcements Feed (All/Unread/Important/Bookmarked tabs, search) | Announcement History (All/Published/Drafts, search, publish/delete actions) |
+| `/announcements/[id]` | Full detail view, bookmark, share | Same, plus Edit/Publish/Delete for the author |
+| `/announcements/new` | — | Create Announcement → Preview → Publish, or Save Draft |
+| `/notifications` | Grouped by Today/Yesterday/Earlier, filter tabs, mark (all) read | Same (shared component) |
+| `/search` | Live search across courses + published announcements, recent searches | Same (shared component) |
+| `/bookmarks` | All/Announcements/Courses tabs | Same (shared component) |
+| `/students` | — | Roster per course (course picker + search), CSV export |
+| `/analytics` | — | Real stat tiles (Courses/Published/Total Students) + honest empty states for anything untracked |
+| `/profile` | Personal + Academic Info, Payment History, My Activity, edit dialog | Personal/Professional Information tabs, verification status |
+| `/settings` | Account, Preferences (incl. a real, working Dark Mode toggle), Support | Same (shared component) |
+
+A number of mockup elements aren't backed by anything in the schema, and were adapted rather than faked, following the same rule used everywhere else in this project — real data or an honest empty state, never an invented number:
+
+- **"Unread" announcements** (student feed) is a client-side "published since your last visit" heuristic (`localStorage`), since there's no per-user read-state on announcements and nothing yet writes a notification row when one is published.
+- **Course "engagement %" rings** (mockup) became a real enrolled-student count (`coursesService.listForLecturer` now does a second query over `enrollments` to compute it).
+- **Announcement attachments** (Create/Preview/Detail) were left out entirely — `files` links to a `course_id`, not an `announcement_id`, so there's no honest way to say a given file belongs to a given announcement.
+- **Venue / Lecture Date & Time fields** (Create Announcement) aren't modeled — that content goes in the message body, same reasoning as the dashboard's missing lecture-schedule table.
+- **"Announcement Type" and "Priority"** (two separate dropdowns in the mockup) were collapsed into the one real field the schema has — `announcements.priority`.
+- **"Scheduled"/"Archived"** announcement states and **"Schedule for Later"** don't exist (`announcement_status` is only `draft`/`published`) — the History tabs and the create form's toggle reflect that (the toggle renders disabled, labeled "Coming soon", rather than silently doing nothing).
+- **Two-Factor Authentication, Push/Email Notifications** (Settings) render as disabled rows labeled "Coming soon" rather than a toggle that resets on refresh and quietly lies about its own state.
+- **"Materials" bookmarks tab** became a **Courses** tab — `bookmarkable_type` is `'course' | 'announcement'` in the schema, materials aren't bookmarkable.
+- **"Popular Searches"** was left out — there's no cross-user search analytics to honestly back it.
+- Analytics' Views Over Time / Announcement Performance / Top Courses by Engagement charts are all honest empty states, same reasoning and same pattern as the dashboard's Engagement Overview card.
+- **Change Password** (Settings) and **Edit Profile** (full name, phone number) are real, working forms — the latter needed a new `PATCH /api/profile` endpoint, RLS already allowed self-updates (`profiles` migration's "Users can update their own profile" policy) but nothing exposed it yet.
+
 ## API
 
 `src/app/api/**/route.ts` exposes a REST API over the data model — the internal API surface a future mobile app or third-party integration would use, and the shape sketched in the Technical Architecture Document's API Design table. Each route handler is a thin wrapper: validate the request with zod, resolve the caller via `requireUser()`/`requireRole()`, call the matching `services/*.service.ts` function, translate the result into a `{ data }` / `{ error }` JSON envelope. **Row-level security in `supabase/migrations/` is the real authorization boundary** — the route-level role checks exist for clearer error messages, not as the only guard.
@@ -127,9 +160,10 @@ Only Step 1 of each registration wizard was shown in the source mockup; Steps 2 
 | Domain | Endpoints |
 | --- | --- |
 | Auth | `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`, `POST /api/auth/forgot-password`, `POST /api/auth/verify-email`, `POST /api/auth/resend-verification`, `POST /api/auth/reset-password` |
+| Profile | `PATCH /api/profile` (full name, phone number — self only) |
 | Schools | `GET /api/schools` (public) |
-| Courses | `GET/POST /api/courses`, `GET/PATCH/DELETE /api/courses/:id` |
-| Enrollments | `GET/POST /api/enrollments`, `DELETE /api/enrollments/:id` |
+| Courses | `GET/POST /api/courses` (supports `?mine=1`, `?search=`, `?code=&schoolId=`), `GET/PATCH/DELETE /api/courses/:id` |
+| Enrollments | `GET/POST /api/enrollments` (supports `?courseId=` for a course roster), `DELETE /api/enrollments/:id` |
 | Announcements | `GET/POST /api/announcements`, `GET/PATCH/DELETE /api/announcements/:id`, `POST /api/announcements/:id/publish` |
 | Notifications | `GET /api/notifications`, `PATCH/DELETE /api/notifications/:id`, `POST /api/notifications/mark-all-read` |
 | Bookmarks | `GET/POST/DELETE /api/bookmarks` |
@@ -153,7 +187,7 @@ Two layers, documented two different ways:
 
   Or import `docs/openapi.yaml` directly into Postman/Insomnia, or open it with the "OpenAPI (Swagger) Editor" VS Code extension.
 
-  There's intentionally no in-app `/api-docs` page yet — that would be a screen, and this pass is foundation-only.
+  There's intentionally no in-app `/api-docs` page yet — that would be a screen of its own, and hasn't come up in any mockup so far.
 
 ## A note on `components/ui/`
 
@@ -161,12 +195,12 @@ These were hand-authored to match shadcn/ui's standard "new-york" style output, 
 
 ## Not yet built
 
-- Dashboard-area screen content beyond `/dashboard` itself (Courses, Announcements, Students, Analytics, Calendar, Messages, Notifications, Bookmarks, Settings, Profile) — layout chrome exists, page content is still placeholder
-- Lecture schedule, assignments, and events data models (needed for both dashboards' remaining stats to be real)
-- Announcement scheduling (a "publish later" state beyond draft/published) and view/engagement tracking (needed for the lecturer dashboard's Scheduled count, Total Views, and Engagement Overview)
-- An aggregate "total students across my courses" query (currently only per-course enrollment counts are queryable, via `enrollmentsService.listForCourse`)
-- Feature-level components beyond the base `components/ui/` primitives (e.g. an actual CourseCard, AnnouncementCard — see Design System's Cards section)
-- Payment provider integration (webhook route to transition `payments.status`)
+- **Calendar** (`/calendar`) and **Messages** (`/messages`) — lecturer nav items with route placeholders only; no mockup has covered either yet, and both need real data models (a lecture-schedule/timetable table for Calendar; a conversations/messages table for Messages) that don't exist
+- Lecture schedule, assignments, and events data models (needed for the dashboards' remaining stats, and for Calendar, to be real)
+- Announcement scheduling (a "publish later" state beyond draft/published) and view/read/engagement tracking (needed for Analytics' and the lecturer dashboard's remaining charts, and for per-announcement read state)
+- Announcement attachments — `files` links to a course, not an announcement, so Create/Preview/Detail don't have a way to honestly attach a file to one specific announcement
+- Push/email notification preferences and Two-Factor Authentication — no schema for either; Settings shows both as disabled "Coming soon" rows rather than a toggle with nowhere real to persist its state
+- Payment provider integration (webhook route to transition `payments.status`) — Payment History is real and wired, just realistically empty until a provider exists
 - Resend email templates
 - Supabase Edge Functions
 - Signed-URL download route for private course materials (service method exists: `storageService.getSignedUrl`)

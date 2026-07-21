@@ -21,10 +21,10 @@ export async function requireUser() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new ApiAuthError("Unauthorized", 401);
+  if (!user) throw new ApiAuthError("Please log in to continue.", 401);
 
   const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", user.id).single();
-  if (error || !profile) throw new ApiAuthError("Profile not found", 404);
+  if (error || !profile) throw new ApiAuthError("We couldn't find your account. Please try logging in again.", 404);
 
   return { supabase, user, profile };
 }
@@ -33,7 +33,7 @@ export async function requireUser() {
 export async function requireRole(...roles: UserRole[]) {
   const ctx = await requireUser();
   if (!roles.includes(ctx.profile.role)) {
-    throw new ApiAuthError("Forbidden", 403);
+    throw new ApiAuthError("You don't have permission to do that.", 403);
   }
   return ctx;
 }

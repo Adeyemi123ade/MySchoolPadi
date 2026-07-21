@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { authService } from "@/services";
 import { apiError, apiErrorFromException, apiSuccess } from "@/lib/api/response";
+import { friendlyAuthErrorMessage } from "@/lib/api/friendly-auth-error";
 import { signInSchema } from "@/lib/validations/auth";
 
 /** POST /api/auth/login — sign in with email + password. Sets the session cookie via @supabase/ssr. */
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     const { data, error } = await authService.signIn(supabase, input);
-    if (error) return apiError(error.message, 401);
+    if (error) return apiError(friendlyAuthErrorMessage(error.message), 401);
 
     return apiSuccess({ user: data.user, session: data.session });
   } catch (error) {
