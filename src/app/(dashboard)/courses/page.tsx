@@ -1,3 +1,12 @@
+"use client";
+
+import { useAuth } from "@/hooks/use-auth";
+import { CoursesManager } from "@/features/courses/components/courses-manager";
+import { CoursesBrowser } from "@/features/courses/components/courses-browser";
+
 export default function CoursesPage() {
-  return <p className="text-body text-muted-foreground">Courses — route placeholder.</p>;
+  const { profile } = useAuth();
+
+  if (profile?.role === "lecturer") return <CoursesManager />;
+  return <CoursesBrowser />;
 }

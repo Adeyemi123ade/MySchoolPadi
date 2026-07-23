@@ -5,7 +5,9 @@ import { BarChart3, BookOpen, Megaphone, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useMyCourses } from "@/features/courses/hooks/use-courses";
 import { useMyAnnouncements } from "@/features/announcements/hooks/use-announcements";
+import { useAllMyStudents } from "@/features/students/hooks/use-students";
 import { timeBasedGreeting } from "@/features/dashboard/lib/greeting";
+import { ROUTES } from "@/constants/routes";
 import { StatCard } from "./stat-card";
 import { AnnouncementSummaryCard } from "./announcement-summary-card";
 import { EngagementOverviewCard } from "./engagement-overview-card";
@@ -40,6 +42,8 @@ export function LecturerDashboardView() {
   const { profile } = useAuth();
   const { data: courses } = useMyCourses();
   const { data: announcements } = useMyAnnouncements();
+  const { data: students } = useAllMyStudents();
+  const studentCount = students.length;
 
   const lastName = profile?.full_name?.split(" ").at(-1) ?? "there";
   const published = announcements?.filter((a) => a.status === "published").length ?? 0;
@@ -61,10 +65,16 @@ export function LecturerDashboardView() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard icon={BookOpen} label="Courses" value={courses?.length ?? 0} accent="primary" />
-        <StatCard icon={Megaphone} label="Announcements" value={announcements?.length ?? 0} accent="success" />
-        {/* Total Students and Avg. Engagement aren't backed by an aggregate query yet — see README. */}
-        <StatCard icon={Users} label="Total Students" value={0} accent="secondary" />
+        <StatCard icon={BookOpen} label="Courses" value={courses?.length ?? 0} accent="primary" href={ROUTES.courses} />
+        <StatCard
+          icon={Megaphone}
+          label="Announcements"
+          value={announcements?.length ?? 0}
+          accent="success"
+          href={ROUTES.announcements}
+        />
+        <StatCard icon={Users} label="Total Students" value={studentCount} accent="secondary" href={ROUTES.students} />
+        {/* Avg. Engagement isn't backed by an aggregate query yet — see README. */}
         <StatCard icon={BarChart3} label="Avg. Engagement" value="—" accent="warning" />
       </div>
 

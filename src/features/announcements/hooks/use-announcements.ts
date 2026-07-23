@@ -26,3 +26,13 @@ export function useMyAnnouncements() {
     staleTime: 30 * 1000,
   });
 }
+
+/** A single announcement by id — used for the detail/drill-down page. */
+export function useAnnouncement(id: string) {
+  return useQuery({
+    queryKey: ["announcements", id],
+    queryFn: () => fetchJson<AnnouncementWithAuthor>(`/api/announcements/${id}`),
+    staleTime: 30 * 1000,
+    enabled: Boolean(id),
+  });
+}
