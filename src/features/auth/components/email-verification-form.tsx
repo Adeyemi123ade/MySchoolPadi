@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { OtpInput } from "./otp-input";
+import { RegistrationSuccess } from "./registration-success";
 import { createClient } from "@/lib/supabase/client";
 import { authService } from "@/services";
 import { ROUTES } from "@/constants/routes";
@@ -27,6 +28,7 @@ export function EmailVerificationForm() {
 
   const [code, setCode] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [expiresIn, setExpiresIn] = useState(CODE_TTL_SECONDS);
   const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS);
 
@@ -51,11 +53,15 @@ export function EmailVerificationForm() {
       }
 
       toast.success("Email verified!");
-      router.push(ROUTES.dashboard);
-      router.refresh();
+      setIsVerified(true);
     } finally {
       setIsVerifying(false);
     }
+  }
+
+  function handleProceedToDashboard() {
+    router.push(ROUTES.dashboard);
+    router.refresh();
   }
 
   async function handleResend() {
@@ -69,6 +75,10 @@ export function EmailVerificationForm() {
     toast.success("Verification code resent.");
     setExpiresIn(CODE_TTL_SECONDS);
     setResendCooldown(RESEND_COOLDOWN_SECONDS);
+  }
+
+  if (isVerified) {
+    return <RegistrationSuccess onProceed={handleProceedToDashboard} />;
   }
 
   return (

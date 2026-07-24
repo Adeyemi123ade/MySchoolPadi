@@ -6,9 +6,11 @@ import { Sidebar } from "./sidebar";
 import { MobileNavSheet } from "./mobile-nav-sheet";
 import { BottomNav } from "./bottom-nav";
 import { Footer } from "./footer";
+import { useRealtimeNotifications } from "@/features/notifications/hooks/use-realtime-notifications";
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  useRealtimeNotifications();
 
   return (
     <div className="flex min-h-screen flex-col">
