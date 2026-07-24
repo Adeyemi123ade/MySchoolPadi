@@ -15,37 +15,60 @@ import type { Notification } from "@/types";
  */
 export function useRealtimeNotifications() {
   const { profile } = useAuth();
+  const userId = profile?.id;
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!profile) return;
+    if (!userId) return;
 
     const supabase = createClient();
-    const channel = supabase
-      .channel(`notifications:${profile.id}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${profile.id}` },
-        (payload) => {
-          const notification = payload.new as Notification;
+    let cancelled = false;
 
-          queryClient.invalidateQueries({ queryKey: ["notifications"] });
-          if (notification.type === "announcement") {
-            queryClient.invalidateQueries({ queryKey: ["announcements"] });
-          }
+    async function subscribe() {
+      // The websocket needs the user's JWT explicitly handed to it before
+      // subscribing — @supabase/ssr keeps the session in cookies for HTTP
+      // requests, but Realtime's RLS check needs `realtime.setAuth()` too,
+      // otherwise INSERT events matching the `user_id = auth.uid()` policy
+      // are silently dropped instead of delivered.
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (cancelled || !session) return;
+      supabase.realtime.setAuth(session.access_token);
 
-          toast(notification.title, {
-            description: notification.body ?? undefined,
-            action: notification.link
-              ? { label: "View", onClick: () => (window.location.href = notification.link!) }
-              : undefined,
-          });
-        },
-      )
-      .subscribe();
+      const channel = supabase
+        .channel(`notifications:${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+          (payload) => {
+            const notification = payload.new as Notification;
+
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+            if (notification.type === "announcement") {
+              queryClient.invalidateQueries({ queryKey: ["announcements"] });
+            }
+
+            toast(notification.title, {
+              description: notification.body ?? undefined,
+              action: notification.link
+                ? { label: "View", onClick: () => (window.location.href = notification.link!) }
+                : undefined,
+            });
+          },
+        )
+        .subscribe();
+
+      return channel;
+    }
+
+    const channelPromise = subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      cancelled = true;
+      channelPromise.then((channel) => {
+        if (channel) supabase.removeChannel(channel);
+      });
     };
-  }, [profile, queryClient]);
+  }, [userId, queryClient]);
 }
