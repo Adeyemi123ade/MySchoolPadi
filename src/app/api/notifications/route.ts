@@ -2,6 +2,8 @@ import { notificationsService } from "@/services";
 import { requireUser } from "@/lib/api/auth";
 import { apiErrorFromException, apiSuccess } from "@/lib/api/response";
 
+export const dynamic = "force-dynamic";
+
 /** GET /api/notifications — list the current user's own notifications, newest first. */
 export async function GET() {
   try {
