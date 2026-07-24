@@ -53,10 +53,7 @@ export function AnnouncementsManager() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-h2 font-bold text-foreground">Announcements</h1>
-          <p className="text-body text-muted-foreground">Create, draft, and publish announcements for your students.</p>
-        </div>
+        <p className="text-body text-muted-foreground">Create, draft, and publish announcements for your students.</p>
         <Button onClick={openCreate}>
           <Plus className="size-4" /> New Announcement
         </Button>

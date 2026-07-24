@@ -80,12 +80,9 @@ function StudentsPageContent() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-h2 font-bold text-foreground">Students</h1>
-        <p className="text-body text-muted-foreground">
-          {courseId ? "Students enrolled in this course." : "Every student enrolled across your courses."}
-        </p>
-      </div>
+      <p className="text-body text-muted-foreground">
+        {courseId ? "Students enrolled in this course." : "Every student enrolled across your courses."}
+      </p>
 
       {courseId ? <CourseStudentsList courseId={courseId} /> : <AllStudentsList />}
     </div>

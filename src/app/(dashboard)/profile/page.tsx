@@ -27,8 +27,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex max-w-xl flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-h2 font-bold text-foreground">Profile</h1>
+      <div className="flex items-center justify-end">
         <Button asChild variant="secondary" size="sm">
           <Link href={ROUTES.settings}>Edit in Settings</Link>
         </Button>

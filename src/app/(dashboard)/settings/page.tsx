@@ -17,10 +17,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-8">
-      <div>
-        <h1 className="text-h2 font-bold text-foreground">Settings</h1>
-        <p className="text-body text-muted-foreground">Manage your profile, appearance, and account.</p>
-      </div>
+      <p className="text-body text-muted-foreground">Manage your profile, appearance, and account.</p>
 
       <div>
         <h2 className="text-h4 font-semibold text-foreground">Profile</h2>

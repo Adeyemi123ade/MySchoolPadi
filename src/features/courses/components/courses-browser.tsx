@@ -10,10 +10,7 @@ export function CoursesBrowser() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-h2 font-bold text-foreground">Courses</h1>
-        <p className="text-body text-muted-foreground">Courses available at your school.</p>
-      </div>
+      <p className="text-body text-muted-foreground">Courses available at your school.</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
         {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}

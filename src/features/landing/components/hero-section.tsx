@@ -14,6 +14,21 @@ const FEATURE_HIGHLIGHTS = [
 export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#2c1a68] via-[#1a0f3d] to-[#12091f] text-white">
+      {/* Full-bleed background photo behind the whole section on mobile/tablet, so the
+          image reads as part of the same visual block as the text instead of a
+          separate boxed element below it. Replaced by the side-by-side layout at lg+. */}
+      <div aria-hidden className="absolute inset-0 lg:hidden">
+        <Image
+          src="/images/auth/student-illustration.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover object-top"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a0f3d]/55 via-[#1a0f3d]/80 to-[#12091f]" />
+      </div>
+
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(124,92,255,0.28),transparent_60%)]"
@@ -62,23 +77,19 @@ export function HeroSection() {
           </ul>
         </div>
 
-        <div className="relative mx-auto flex w-full max-w-[260px] items-center justify-center px-4 pb-14 sm:max-w-[320px] sm:pb-16 lg:mx-0 lg:block lg:h-full lg:w-auto lg:max-w-none lg:px-0 lg:pb-0">
-          <div className="relative aspect-[3/4] w-full [mask-image:radial-gradient(ellipse_75%_85%_at_50%_38%,black_65%,transparent_100%)] lg:aspect-auto lg:h-full lg:w-full lg:[mask-image:none]">
-            <div
-              aria-hidden
-              className="absolute inset-0 scale-110 rounded-full bg-primary/40 blur-3xl lg:hidden"
-            />
+        <div className="relative z-10 hidden lg:block lg:h-full lg:w-auto">
+          <div className="relative h-full w-full">
             <Image
               src="/images/auth/student-illustration.webp"
               alt="A student carrying textbooks and a backpack"
               fill
-              sizes="(min-width: 1024px) 40vw, (min-width: 640px) 320px, 260px"
-              className="object-contain object-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.45)] lg:object-cover lg:object-top lg:drop-shadow-none"
+              sizes="40vw"
+              className="object-cover object-top"
               priority
             />
           </div>
 
-          <div className="absolute bottom-2 left-1/2 flex w-max -translate-x-1/2 items-center gap-3 rounded-lg bg-white px-4 py-3 text-neutral-900 shadow-xl sm:bottom-4 lg:bottom-8">
+          <div className="absolute bottom-8 left-1/2 flex w-max -translate-x-1/2 items-center gap-3 rounded-lg bg-white px-4 py-3 text-neutral-900 shadow-xl">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-success/15 text-success">
               <Bell className="size-4" />
             </span>
