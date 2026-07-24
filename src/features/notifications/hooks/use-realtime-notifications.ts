@@ -57,7 +57,12 @@ export function useRealtimeNotifications() {
             });
           },
         )
-        .subscribe();
+        .subscribe((status, err) => {
+          // Deliberately not gated to dev-only — this is the only way to see
+          // whether the websocket actually connected on a deployed preview.
+          // eslint-disable-next-line no-console
+          console.log("[realtime notifications]", status, err ?? "");
+        });
 
       return channel;
     }

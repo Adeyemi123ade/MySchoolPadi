@@ -4,7 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/api/fetch-json";
 import type { Announcement, AnnouncementWithAuthor } from "@/types";
 
-/** Published announcements visible to the current user. */
+/**
+ * Published announcements visible to the current user. Polls on a short
+ * interval so the feed picks up newly published announcements on its own —
+ * see the note on useNotifications() for why this doesn't rely solely on
+ * the realtime push.
+ */
 export function useAnnouncements(params?: { courseId?: string; schoolId?: string }) {
   const search = new URLSearchParams();
   if (params?.courseId) search.set("courseId", params.courseId);
@@ -14,7 +19,8 @@ export function useAnnouncements(params?: { courseId?: string; schoolId?: string
     queryKey: ["announcements", params ?? {}],
     queryFn: () =>
       fetchJson<AnnouncementWithAuthor[]>(`/api/announcements${search.toString() ? `?${search}` : ""}`),
-    staleTime: 30 * 1000,
+    staleTime: 10 * 1000,
+    refetchInterval: 15 * 1000,
   });
 }
 
