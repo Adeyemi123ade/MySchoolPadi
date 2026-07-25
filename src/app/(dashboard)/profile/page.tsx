@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BackButton } from "@/components/layout/back-button";
 import { useAuth } from "@/hooks/use-auth";
 import { ROUTES } from "@/constants/routes";
 
@@ -27,7 +28,8 @@ export default function ProfilePage() {
 
   return (
     <div className="flex max-w-xl flex-col gap-6">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <BackButton href={ROUTES.dashboard} label="Back to Dashboard" />
         <Button asChild variant="secondary" size="sm">
           <Link href={ROUTES.settings}>Edit in Settings</Link>
         </Button>

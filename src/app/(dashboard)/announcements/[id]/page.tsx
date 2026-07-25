@@ -1,16 +1,15 @@
 "use client";
 
 import { use, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { BackButton } from "@/components/layout/back-button";
 import { AnnouncementFormDialog } from "@/features/announcements/components/announcement-form-dialog";
 import { useAuth } from "@/hooks/use-auth";
 import { useAnnouncement } from "@/features/announcements/hooks/use-announcements";
@@ -54,9 +53,7 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
 
   return (
     <div className="flex flex-col gap-6">
-      <Link href={ROUTES.announcements} className="flex w-fit items-center gap-1 text-body text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> Back to Announcements
-      </Link>
+      <BackButton href={ROUTES.announcements} label="Back to Announcements" />
 
       {isLoading && <Skeleton className="h-48 w-full" />}
 

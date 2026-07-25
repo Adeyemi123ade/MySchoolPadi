@@ -1,18 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Bell } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BackButton } from "@/components/layout/back-button";
 import { cn } from "@/lib/utils";
 import { useNotifications } from "@/features/notifications/hooks/use-notifications";
 import {
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
 } from "@/features/notifications/hooks/use-notification-mutations";
+import { ROUTES } from "@/constants/routes";
 import type { Notification } from "@/types";
 
 export default function NotificationsPage() {
@@ -29,9 +30,9 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <p className="text-body text-muted-foreground">Stay on top of what&apos;s new.</p>
+        <BackButton href={ROUTES.dashboard} label="Back to Dashboard" />
         {unreadCount > 0 && (
           <Button type="button" variant="secondary" size="sm" onClick={() => markAllAsRead.mutate()}>
             Mark all as read
@@ -76,15 +77,6 @@ export default function NotificationsPage() {
           </button>
         ))}
       </div>
-
-      {notifications && notifications.length > 0 && (
-        <p className="text-center text-caption text-muted-foreground">
-          Looking for a specific announcement?{" "}
-          <Link href="/announcements" className="font-medium text-primary hover:underline">
-            View all announcements
-          </Link>
-        </p>
-      )}
     </div>
   );
 }

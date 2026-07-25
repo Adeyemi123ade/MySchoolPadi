@@ -6,8 +6,10 @@ import { useSearchParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BackButton } from "@/components/layout/back-button";
 import { useAuth } from "@/hooks/use-auth";
 import { useAllMyStudents, useCourseStudents } from "@/features/students/hooks/use-students";
+import { ROUTES } from "@/constants/routes";
 
 function initials(name?: string | null) {
   if (!name) return "?";
@@ -80,6 +82,11 @@ function StudentsPageContent() {
 
   return (
     <div className="flex flex-col gap-6">
+      <BackButton
+        href={courseId ? ROUTES.courses : ROUTES.dashboard}
+        label={courseId ? "Back to Courses" : "Back to Dashboard"}
+      />
+
       <p className="text-body text-muted-foreground">
         {courseId ? "Students enrolled in this course." : "Every student enrolled across your courses."}
       </p>

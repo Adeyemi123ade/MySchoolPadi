@@ -3,10 +3,12 @@
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { BackButton } from "@/components/layout/back-button";
 import { AvatarUploader } from "@/features/profile/components/avatar-uploader";
 import { ProfileFieldsForm } from "@/features/profile/components/profile-fields-form";
 import { HelpFaqSection } from "@/features/profile/components/help-faq-section";
 import { useAuth } from "@/hooks/use-auth";
+import { ROUTES } from "@/constants/routes";
 
 export default function SettingsPage() {
   const { profile, isLoading } = useAuth();
@@ -17,7 +19,10 @@ export default function SettingsPage() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-8">
-      <p className="text-body text-muted-foreground">Manage your profile, appearance, and account.</p>
+      <div className="flex flex-col gap-2">
+        <BackButton href={ROUTES.dashboard} label="Back to Dashboard" />
+        <p className="text-body text-muted-foreground">Manage your profile, appearance, and account.</p>
+      </div>
 
       <div>
         <h2 className="text-h4 font-semibold text-foreground">Profile</h2>
