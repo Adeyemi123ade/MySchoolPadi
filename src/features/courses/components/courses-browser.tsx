@@ -10,8 +10,6 @@ export function CoursesBrowser() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-body text-muted-foreground">Courses available at your school.</p>
-
       <div className="grid gap-3 sm:grid-cols-2">
         {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
 

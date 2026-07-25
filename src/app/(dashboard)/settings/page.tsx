@@ -19,10 +19,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <BackButton href={ROUTES.dashboard} label="Back to Dashboard" />
-        <p className="text-body text-muted-foreground">Manage your profile, appearance, and account.</p>
-      </div>
+      <BackButton href={ROUTES.dashboard} label="Back to Dashboard" />
 
       <div>
         <h2 className="text-h4 font-semibold text-foreground">Profile</h2>

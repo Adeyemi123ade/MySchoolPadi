@@ -10,16 +10,21 @@ import { useRealtimeNotifications } from "@/features/notifications/hooks/use-rea
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   useRealtimeNotifications();
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header onMenuClick={() => setMobileNavOpen(true)} />
+      <Header
+        onMenuClick={() => setMobileNavOpen(true)}
+        sidebarCollapsed={sidebarCollapsed}
+        onToggleSidebar={() => setSidebarCollapsed((v) => !v)}
+      />
       <MobileNavSheet open={mobileNavOpen} onOpenChange={setMobileNavOpen} />
 
       <div className="flex flex-1">
         <div className="hidden md:block">
-          <Sidebar />
+          <Sidebar collapsed={sidebarCollapsed} onNavigate={() => setSidebarCollapsed(true)} />
         </div>
         <main className="flex-1 p-6 pb-20 md:pb-6">{children}</main>
       </div>

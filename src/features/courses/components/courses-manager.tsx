@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,10 +36,9 @@ export function CoursesManager() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <p className="text-body text-muted-foreground">Courses you teach.</p>
+      <div className="flex justify-end">
         <Button onClick={() => setFormOpen(true)}>
-          <Plus className="size-4" /> New Course
+          <Plus className="size-4" /> Create Course
         </Button>
       </div>
 
@@ -71,8 +70,15 @@ export function CoursesManager() {
               <Button asChild type="button" variant="secondary" size="sm">
                 <Link href={`${ROUTES.students}?courseId=${course.id}`}>View Students</Link>
               </Button>
-              <Button type="button" variant="danger" size="sm" onClick={() => setPendingDeleteId(course.id)}>
-                Delete
+              <Button
+                type="button"
+                variant="danger"
+                size="icon"
+                className="size-8"
+                aria-label="Delete"
+                onClick={() => setPendingDeleteId(course.id)}
+              >
+                <Trash2 className="size-4" />
               </Button>
             </div>
           </div>

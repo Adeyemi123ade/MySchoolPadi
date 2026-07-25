@@ -4,6 +4,7 @@ import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { Pencil, Trash2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,8 +67,40 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
       {announcement && (
         <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-6">
           <div className="flex items-center justify-between gap-2">
-            <Badge variant={priorityBadgeVariant(announcement.priority)}>{announcement.priority.toUpperCase()}</Badge>
-            {announcement.status === "draft" && <Badge variant="outline">DRAFT</Badge>}
+            <div className="flex items-center gap-2">
+              <Badge variant={priorityBadgeVariant(announcement.priority)} className="px-1.5 py-0 text-[10px] leading-4">
+                {announcement.priority.toUpperCase()}
+              </Badge>
+              {announcement.status === "draft" && (
+                <Badge variant="outline" className="px-1.5 py-0 text-[10px] leading-4">
+                  Draft
+                </Badge>
+              )}
+            </div>
+            {isAuthor && (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Edit"
+                  onClick={() => setEditOpen(true)}
+                >
+                  <Pencil className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="danger"
+                  size="icon"
+                  className="size-8"
+                  aria-label="Delete"
+                  onClick={() => setConfirmDeleteOpen(true)}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </div>
+            )}
           </div>
 
           <h1 className="text-h2 font-bold text-foreground">{announcement.title}</h1>
@@ -78,17 +111,6 @@ export default function AnnouncementDetailPage({ params }: { params: Promise<{ i
           </p>
 
           <p className="whitespace-pre-wrap text-body text-foreground">{announcement.body}</p>
-
-          {isAuthor && (
-            <div className="flex gap-2 border-t border-border pt-4">
-              <Button type="button" variant="secondary" onClick={() => setEditOpen(true)}>
-                Edit
-              </Button>
-              <Button type="button" variant="danger" onClick={() => setConfirmDeleteOpen(true)}>
-                Delete
-              </Button>
-            </div>
-          )}
         </div>
       )}
 

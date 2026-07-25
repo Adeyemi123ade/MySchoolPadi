@@ -9,8 +9,6 @@ export function AnnouncementsFeed() {
 
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-body text-muted-foreground">Updates from your school and courses.</p>
-
       <div className="flex flex-col gap-3">
         {isLoading && Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
 

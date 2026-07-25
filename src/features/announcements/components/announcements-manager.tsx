@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNowStrict } from "date-fns";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,10 +52,9 @@ export function AnnouncementsManager() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <p className="text-body text-muted-foreground">Create, draft, and publish announcements for your students.</p>
+      <div className="flex justify-end">
         <Button onClick={openCreate}>
-          <Plus className="size-4" /> New Announcement
+          <Plus className="size-4" /> Create Announcement
         </Button>
       </div>
 
@@ -81,8 +80,11 @@ export function AnnouncementsManager() {
           >
             <Link href={ROUTES.announcement(announcement.id)} className="flex flex-1 flex-col gap-1">
               <div className="flex items-center gap-2">
-                <Badge variant={announcement.status === "published" ? "success" : "outline"}>
-                  {announcement.status === "published" ? "PUBLISHED" : "DRAFT"}
+                <Badge
+                  variant={announcement.status === "published" ? "success" : "outline"}
+                  className="px-1.5 py-0 text-[10px] leading-4"
+                >
+                  {announcement.status === "published" ? "Published" : "Draft"}
                 </Badge>
                 <span className="text-caption text-muted-foreground">
                   {formatDistanceToNowStrict(new Date(announcement.updated_at), { addSuffix: true })}
@@ -92,11 +94,25 @@ export function AnnouncementsManager() {
               <p className="line-clamp-2 text-body text-muted-foreground">{announcement.body}</p>
             </Link>
             <div className="flex shrink-0 gap-2">
-              <Button type="button" variant="secondary" size="sm" onClick={() => openEdit(announcement)}>
-                Edit
+              <Button
+                type="button"
+                variant="secondary"
+                size="icon"
+                className="size-8"
+                aria-label="Edit"
+                onClick={() => openEdit(announcement)}
+              >
+                <Pencil className="size-4" />
               </Button>
-              <Button type="button" variant="danger" size="sm" onClick={() => setPendingDeleteId(announcement.id)}>
-                Delete
+              <Button
+                type="button"
+                variant="danger"
+                size="icon"
+                className="size-8"
+                aria-label="Delete"
+                onClick={() => setPendingDeleteId(announcement.id)}
+              >
+                <Trash2 className="size-4" />
               </Button>
             </div>
           </div>

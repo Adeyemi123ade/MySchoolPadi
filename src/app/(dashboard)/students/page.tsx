@@ -87,10 +87,6 @@ function StudentsPageContent() {
         label={courseId ? "Back to Courses" : "Back to Dashboard"}
       />
 
-      <p className="text-body text-muted-foreground">
-        {courseId ? "Students enrolled in this course." : "Every student enrolled across your courses."}
-      </p>
-
       {courseId ? <CourseStudentsList courseId={courseId} /> : <AllStudentsList />}
     </div>
   );
