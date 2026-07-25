@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, LogOut, Menu, Search, Settings, User as UserIcon } from "lucide-react";
+import { Bell, LogOut, Menu, PanelLeft, Search, Settings, User as UserIcon } from "lucide-react";
 
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,15 @@ function initials(name?: string | null) {
     .toUpperCase();
 }
 
-export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
+export function Header({
+  onMenuClick,
+  sidebarCollapsed,
+  onToggleSidebar,
+}: {
+  onMenuClick?: () => void;
+  sidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
+}) {
   const { profile } = useAuth();
   const unreadCount = useUnreadNotificationCount();
 
@@ -43,6 +51,17 @@ export function Header({ onMenuClick }: { onMenuClick?: () => void }) {
     <header className="flex h-16 items-center gap-3 border-b border-border bg-background px-4">
       <Button variant="ghost" size="icon" className="md:hidden" onClick={onMenuClick} aria-label="Open menu">
         <Menu className="size-5" />
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        className="hidden md:inline-flex"
+        onClick={onToggleSidebar}
+        aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-pressed={sidebarCollapsed}
+      >
+        <PanelLeft className="size-5" />
       </Button>
 
       <Link href={ROUTES.dashboard}>

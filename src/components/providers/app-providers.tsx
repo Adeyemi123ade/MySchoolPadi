@@ -1,13 +1,16 @@
 "use client";
 
 import { QueryProvider } from "./query-provider";
+import { ThemeProvider } from "./theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <QueryProvider>
-      {children}
-      <Toaster position="top-right" />
-    </QueryProvider>
+    <ThemeProvider>
+      <QueryProvider>
+        {children}
+        <Toaster position="top-right" />
+      </QueryProvider>
+    </ThemeProvider>
   );
 }

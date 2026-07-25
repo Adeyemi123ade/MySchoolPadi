@@ -7,3 +7,4 @@ export { notificationsService } from "./notifications.service";
 export { bookmarksService } from "./bookmarks.service";
 export { paymentsService } from "./payments.service";
 export { storageService } from "./storage.service";
+export { profilesService } from "./profiles.service";
