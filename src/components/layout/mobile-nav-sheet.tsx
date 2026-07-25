@@ -11,13 +11,13 @@ export function MobileNavSheet({ open, onOpenChange }: { open: boolean; onOpenCh
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-72">
+      <SheetContent side="left" className="w-56">
         <SheetHeader>
           <SheetTitle>Menu</SheetTitle>
         </SheetHeader>
         <nav aria-label="Main navigation" className="flex flex-col gap-1">
           {items.map((item) => (
-            <NavLink key={item.href} item={item} />
+            <NavLink key={item.href} item={item} onDoubleClick={() => onOpenChange(false)} />
           ))}
         </nav>
       </SheetContent>
